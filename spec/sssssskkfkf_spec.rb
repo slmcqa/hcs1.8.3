@@ -1,6 +1,10 @@
 
 require 'spec_helper'
-describe 'Challenges Happy Flow', :type => :feature do
+
+describe "Challenges Happy Flow", :type => :feature do
+
+before(:all) do
+  
 # test variables
 let(:test_image){ "#{Dir.pwd}/assets/tree.png" } # TODO, change to non-rails path
 let(:response_answer_max_chars){ '100' }
@@ -10,29 +14,28 @@ let(:response_interval){ '1' }
 let(:response_type){ 'Text Survey' }
 let(:response_type_expected){ 'Survey' }
 let(:response_types){
-[
-"Submit Photo",
-"Submit Video",
-"Caption Photo",
-"View URL",
-"View Photo",
-"View YouTube",
-"Share",
-"Post",
-"Connect",
-"Like",
-"Follow",
-"Facebook Post",
-"Ratings Survey",
-"Multiple Choice Survey",
-"Text Survey",
-"Numeric Survey",
-"Update Profile",
-"Update Preference",
-"Custom"
-]
+          [
+          "Submit Photo",
+          "Submit Video",
+          "Caption Photo",
+          "View URL",
+          "View Photo",
+          "View YouTube",
+          "Share",
+          "Post",
+          "Connect",
+          "Like",
+          "Follow",
+          "Facebook Post",
+          "Ratings Survey",
+          "Multiple Choice Survey",
+          "Text Survey",
+          "Numeric Survey",
+          "Update Profile",
+          "Update Preference",
+          "Custom"
+          ]
 }
-before :all do
 # these variables are defined here so they can be used in the after callback
 @admin_email = 'testautomation@stellarloyalty.com'
 @admin_password = '12345678'
@@ -41,7 +44,8 @@ before :all do
 @challenge_description = Faker::Lorem.paragraphs.join[0..249] # 250 characters
 @response_question = Faker::Hacker.say_something_smart
 end
-after :all do
+
+after(:all) do
 login(@admin_email, @admin_password)
 within('div#main-navbar-collapse'){ click_link 'Challenges' }
 within('div#challenges') { click_link @challenge_name }
@@ -171,5 +175,6 @@ select 'Published', from: 'challenge_status'
 # find('input#challenge_effectivity_end').click # trigger calender
 # find('input#challenge_effectivity_end').set(ts.strftime("#{future_year}-%m-%d 00:00"))
 click_button 'Save'
+end
 end
 end
