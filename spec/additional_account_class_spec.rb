@@ -8,7 +8,7 @@ describe "Patient Billing and Accounting - Additional Account Class Discount (Wo
 
   attr_reader :selenium_driver
   alias :slmc :selenium_driver
-
+sad
   before(:all) do
     @selenium_driver = SLMC.new
     @selenium_driver.start_new_browser_session
