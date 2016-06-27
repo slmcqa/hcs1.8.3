@@ -22,13 +22,10 @@ describe "test" do
 #    @password = "123qweuser"
 #    @patient = Admission.generate_data
   end
-
   after(:all) do
   #  slmc.logout
     slmc.close_current_browser_session
   end
-
-
 
   it "should desc" do
 #      Database.connect
