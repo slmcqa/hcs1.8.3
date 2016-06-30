@@ -1,6 +1,6 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
-##require File.dirname(__FILE__) + '/../lib/slmc'
+require File.expand_path(File.dirname(__FILE__)) + '/../lib/slmc.rb'
 require 'rubygems'
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 #require# File.expand_path(File.dirname(__FILE__) + 'C:\\Ruby\\lib\\ruby\\gems\\1.8\\gems\\sikulirc-0.0.1\\lib')
