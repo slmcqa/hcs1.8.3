@@ -210,6 +210,8 @@ module CentralSterileSupply
     get_text "//div[@id='errorMessages']/div" if options[:compounded]
   end
   def tag_document
+        sleep 3
+    click "id=popup_content" if is_element_present("id=popup_conten")
     sleep 10
     click "popup_ok" if is_element_present("popup_ok")
     sleep 3

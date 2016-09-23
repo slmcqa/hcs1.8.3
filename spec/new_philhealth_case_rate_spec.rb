@@ -62,6 +62,7 @@ describe "New_Philhealth_Case_rate_Inpatient" do
     slmc.admission_search(:pin => "Test")
     @@pin1 = slmc.create_new_patient(@patient1).gsub(' ', '')
     #@@pin1 = "1210068782"
+    
     slmc.admission_search(:pin => @@pin1).should be_true
     slmc.create_new_admission(:account_class => "INDIVIDUAL", :org_code => "0287", :rch_code => "RCH08",
       :room_charge => "REGULAR PRIVATE", :diagnosis => "DENGUE FEVER", :doctor_code => "6726").should == "Patient admission details successfully saved."
@@ -413,7 +414,8 @@ slmc.my_pba_full_payment
            ## slmc.is_text_present("- RVS Code 66983 last availment date is 09/22/2014.")
             slmc.is_text_present("RVS Code 66983 is not covered by SPC rule")
             slmc.is_text_present("Total RB days consumed is 0.")
-            slmc.click "id=popup_ok"
+             slmc.get_alert if slmc.is_alert_present
+            slmc.click "id=popup_ok" if slmc.is_element_present"id=popup_ok"
             
 
 
@@ -853,7 +855,6 @@ end
      ((slmc.truncate_to((@@ph1[:inpatient_physician_benefit_claim].to_f - @@physician_pf_claim),2).to_f).abs).should <= 0.01
   end
 end
-
 
 
 

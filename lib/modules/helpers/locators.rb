@@ -312,6 +312,8 @@ module Locators
     end
     def self.pin
     #  "//div[@id='admissionInfo']/div[3]/div[1]/div"
+     # "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[4]/div[1]/div"
+    #  "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[3]/div[1]/div"
       "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[4]/div[1]/div"
     end
     def self.room_bed
@@ -386,7 +388,7 @@ module Locators
     end
     def self.cancel_registration_link
       "link=Cancel Registration"
-    end
+    end 
     def self.update_registration_link
       "link=Update Registration"
     end

@@ -485,6 +485,13 @@ puts "@@summary3[:total_net_amount].to_f = #{sam}"
     slmc.oss_submit_order("yes").should == "The ORWITHCI was successfully updated with printTag = 'Y'."
   end
   it "8th Scenario: OSS - NO Courtesy Discount with Individual guarantor" do
+   slmc.login("sel_oss3", @password).should be_true
+    slmc.go_to_das_oss
+    slmc.patient_pin_search(:pin => "test")
+    slmc.click_outpatient_registration.should be_true
+   @oss_patient = Admission.generate_data(:not_senior => true)
+    @@pin = slmc.oss_outpatient_registration(@oss_patient).gsub(' ', '')
+    
     slmc.go_to_das_oss
     slmc.patient_pin_search(:pin => @@pin)
    slmc.click_outpatient_order(:pin => @@pin).should be_true
@@ -995,7 +1002,7 @@ slmc.click "//html/body/div[5]/div[2]/input[5]" if slmc.is_element_present("//ht
       else
         if slmc.verify_su_patient_status(@@board_member) != "Clinically Discharged"
           slmc.validate_incomplete_orders(:outpatient => true, :pin => @@board_member, :ancillary => true, :orders => "multiple")
-          slmc.gono_to_occupancy_list_page
+          slmc.go_to_occupancy_list_page
           @@visit_no = slmc.clinically_discharge_patient(:outpatient => true, :pin => @@board_member, :pf_amount => '1000', :no_pending_order => true, :save => true).should be_true
         end
         slmc.login("sel_pba2", @password).should be_true
@@ -1003,7 +1010,7 @@ slmc.click "//html/body/div[5]/div[2]/input[5]" if slmc.is_element_present("//ht
         slmc.pba_search(:with_discharge_notice => true, :pin => @@board_member)
         slmc.go_to_page_using_visit_number("Update Patient Information", slmc.visit_number)
         slmc.click_guarantor_to_update
-        slmc.pba_update_guarantor(:guarantor_type => "BOARD MEMBER", :guarantor_code => "BMLC001").should be_true
+        slmc.pba_update_guarantor(:guarantor_type => "BOARD MEMBER", :guarantor_code => "BMLC001",:include_pf => true).should be_true
         slmc.click_submit_changes
 
         slmc.go_to_patient_billing_accounting_page

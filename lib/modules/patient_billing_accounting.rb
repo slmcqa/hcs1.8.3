@@ -62,7 +62,7 @@ module PatientBillingAccounting
     click  "//input[@value='Submit']", :wait_for => :page
   end
   def go_to_page_using_visit_number(page, vn)
-    select "userAction#{vn}", "label=#{page}"
+    select "id=userAction#{vn}", "label=#{page}"
     click 'css=td.submitButton>input[value="Submit"]', :wait_for => :page
   end
   def select_partial_discount_type(options={})
@@ -918,6 +918,7 @@ end
   #exclude 1 item only from discount
   def exclude_item(options={})
     sleep 40
+
     count = get_css_count("css=#gen_table_body>tr")
 
     if options[:all]
@@ -972,6 +973,8 @@ end
       return get_alert if is_alert_present
       click("saveBtn")
       sleep 40
+      sleep 10
+      
 #      sleep 400
 
       a = is_text_present("Discount Information")
@@ -1676,18 +1679,36 @@ sleep 3
            #   sleep 10
            puts "recompute done"
       end
-    sleep 30
+      if is_alert_present
+             # get_confirmation() =~ /^Please click the Compute button to apply the computation of Philhealth claim./
+              get_alert() =~ /^Please recompute Philhealth to capture correct total benefit claim../
+              sleep 3
+              choose_ok_on_next_confirmation()
+          #    ("Please click the Compute button to apply the computation of Philhealth claim.").should == page.get_alert
+              sleep 3
+              click "id=btnCompute"
+              sleep 10
+              click "id=btnSave"
+           #   sleep 10
+           puts "recompute done"
+      end      
+    sleep 40
    ref_num = get_text Locators::Philhealth.reference_number_label1 if is_element_present(Locators::Philhealth.reference_number_label1)
    puts "reference_number_label1 - #{ref_num}"
-    ref_num = get_text Locators::Philhealth.reference_number_label2 if is_element_present(Locators::Philhealth.reference_number_label2)
-       puts "reference_number_label2 - #{ref_num}"
-    ref_num = get_text Locators::Philhealth.reference_number_label3 if is_element_present(Locators::Philhealth.reference_number_label3)
+    ref_num2 = get_text Locators::Philhealth.reference_number_label2 if is_element_present(Locators::Philhealth.reference_number_label2)
+       puts "reference_number_label2 - #{ref_num2}"
+    ref_num3 = get_text Locators::Philhealth.reference_number_label3 if is_element_present(Locators::Philhealth.reference_number_label3)
 sleep 3
-    puts "reference_number_label2 - #{ref_num}"    
-    if ref_num.include?("PhilHealth Reference No")
-      return ref_num.gsub("PhilHealth Reference No.: ", "")
-    else
+    puts "reference_number_label2 - #{ref_num3}"    
+    if ref_num.include?("PhilHealth Reference No.:")
+      return ref_num.gsub("PhilHealth Reference No.:", "")
+    elsif ref_num2.include?("PhilHealth Reference No.:")
+       ref_num = ref_num2.gsub("PhilHealth Reference No.:", "")
+    elsif  ref_num3.include?("PhilHealth Reference No.:")
+       ref_num = ref_num3.gsub("PhilHealth Reference No.:", "")
       return ref_num
+    else
+       return ref_num
     end
   end
   def my_ph_save_computation#(options ={})
@@ -1961,7 +1982,7 @@ sleep 3
     sleep 2
     click "link=#{options[:select]}", :wait_for => :page
     sleep 10
-    aaa = get_value("id=searchOptions")
+    aaa = get_selected_label("id=searchOptions")
     puts "aaa - #{aaa}"
 
     if options[:search_option] == "GATE PASS"
@@ -1977,22 +1998,24 @@ sleep 3
       select_button = (is_element_present"//select[@id='documentType']") ? "//select[@id='documentType']" :  "documentTypes"
       select select_button, "label=#{options[:doc_type]}" if options[:doc_type]
       
-      if get_value("id=searchOptions") ==  "PIN"
+      if get_selected_label("id=searchOptions") ==  "PIN"
           select "id=searchOptions", "label=VISIT NUMBER"
       else 
-        if get_value("id=searchOptions") == options[:search_option]
+        if get_selected_label("id=searchOptions") == options[:search_option]
           select "id=searchOptions", "label=PIN"
         end
        end
+       
+      
       select "id=searchOptions", "label=#{options[:search_options]}" if options[:search_options] && is_element_present("id=searchOptions")
-      select "id=searchOption", "label=#{options[:search_option]}" if options[:search_option] && is_element_present("id=searchOption")
-       elect "id=searchOptions", "label=#{options[:search_option]}" if options[:search_option] && is_element_present("id=searchOptions")
-      select "id=searchOption", "label=#{options[:search_options]}" if options[:search_options] && is_element_present("id=searchOption")
+#      select "id=searchOption", "label=#{options[:search_option]}" if options[:search_option] && is_element_present("id=searchOption")
+  #     select "id=searchOptions", "label=#{options[:search_option]}" if options[:search_option] && is_element_present("id=searchOptions")
+  #    select "id=searchOption", "label=#{options[:search_options]}" if options[:search_options] && is_element_present("id=searchOption")
       type "id=textSearchEntry", options[:entry] if options[:entry] && (is_element_present("id=textSearchEntry"))
       sleep 5
     end
     click "id=actionButton" #:wait_for => :page
-    sleep 6
+    sleep 10
     if options[:view_and_reprinting]
       return get_text('css=#orTableBody>tr.even>td:nth-child(7)>div>a').include? "Re-print OR" if options[:doc_type] == "OFFICIAL RECEIPT"
       return get_text("css=#philhealthTableBody>tr").include? "Reprint PhilHealth Form" if options[:select] == "PhilHealth"
@@ -2345,11 +2368,18 @@ sleep 3
                       return false
                 end
            else
-                sleep 1
-                click"save", :wait_for => :page
+                sleep 3
+                click"name=save", :wait_for => :page
           end
           click"cancel", :wait_for => :page if options[:cancel]
-          return true if (is_element_present"//input[@type='submit' and @value='Print OR']") || (is_text_present"Miscellaneous Payment Page")
+          click "name=myButtonGroup" if is_element_present"name=myButtonGroup"
+          sleep 3
+          click "id=popup_ok"
+          sleep 3
+          click "id=tagOr", :wait_for => :page
+
+
+          return true if (is_text_present"The Official Receipt print tag has been set as 'Y'.") || (is_text_present"Miscellaneous Payment Page")
       end
   end
   def misc_payment_content(options={})

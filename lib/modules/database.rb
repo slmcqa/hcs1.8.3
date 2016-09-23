@@ -49,6 +49,7 @@ module Database
   end
   #returns the last record from db
   def self.select_last_statement(q)
+ #   a =[]
     if @db_type == "oracle"
       result = @conn.exec(q)
       a = result.fetch
@@ -374,8 +375,10 @@ end
     else
       q = "select DISCOUNT_NO from TXN_PBA_DISC_DTL where REFERENCE_NO = '#{options[:visit_no]}' and DISCOUNT_AMOUNT='#{options[:discount_rate]}'"
     end
-    disc_no = Database.select_last_statement q
+    disc_no = Database.select_statement q
+ #   disc_no = Database.select_last_statement q
     Database.logoff
+    puts "disc_no - #{disc_no}"
     return disc_no
   end
   def get_pin_number_based_on_name(options={})

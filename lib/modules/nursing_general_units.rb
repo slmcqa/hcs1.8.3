@@ -181,20 +181,24 @@ module NursingGenenalUnits
               elsif options[:medical_gases]
                         select("gasRouteCode", options[:device])
                         type("litersPerMinute", options[:lpm])
+                      # continue_value =   get_value("id=gasContinuousFlag")
                         click("id=gasContinuousFlag") if (options[:not_continous] == true && is_checked("id=gasContinuousFlag"))
                         type "id=gasHour", "12" if is_element_present("id=gasHour")
                         type"id=gasMinute", "30" if is_element_present("id=gasMinute")
                         type"id=gasInterval", "10" if is_element_present("id=gasInterval")
-#                          select "id=gasScheduleStartHourStr", "label=12"
+#                      select "id=gasScheduleStartHourStr", "label=12"
 #                         select "id=gasScheduleStartMinuteStr", "label=30"
 #                         select "id=gasScheduleStartTimeMarker", "label=PM"
-puts "at medical cases"
-              end_date = options[:end_date] || Time.now.strftime("%m/%d/%Y")
+                        puts "at medical cases"
+                     #   endt = Time
+                    #    end_date = options[:end_date] || (Time.now + 10*60*60).strftime("%m/%d/%Y") 
+                      end_date = options[:end_date] || (Time.now + (24*60*60)).strftime("%m/%d/%Y") 
                         type("id=gasScheduleStartDateStr", start_date) if is_element_present("id=gasScheduleStartDateStr")
                         type("id=gasScheduleEndDateStr", end_date) if is_element_present("id=gasScheduleEndDateStr")
                     #    type("quantity", @quantity)
 #                        
-
+puts "end_date = #{end_date}"
+ puts "type in id=gasScheduleEndDateStr"
       
               elsif options[:others]
                         type("quantity", @quantity)
@@ -230,14 +234,23 @@ puts "at medical cases"
 
               if options[:add]
                         sleep 10
-                        #    click"id=guAddBtn"
-                         if is_element_present(add_button)
-                                    click add_button
-                                    sleep 10
-                         else
-                                    click"id=guAddBtn" if is_element_present("id=guAddBtn")
-                                    sleep 10
-                         end
+                        if options[:medical_gases]
+                                  click "id=guAddBtn" if is_element_present("id=guAddBtn")                          
+                        else
+                                  if is_element_present(add_button)
+                                             puts "click add"
+                                             if options[:medical_gases]
+                                                    click "id=guAddBtn" if is_element_present("id=guAddBtn")
+                                             else
+                                                 click add_button
+                                                 sleep 10
+                                             end
+                                  else
+                                             click"id=guAddBtn" if is_element_present("id=guAddBtn")
+                                             sleep 10
+                                  end
+                        end
+                        sleep 10
                         if is_element_present("id=verifyActionForm")
                                 click "id=updact2"
                                 click "id=updact1" if options[:update_qty]
@@ -250,7 +263,8 @@ puts "at medical cases"
 
                         # if is_element_present("popup_ok")
                         if is_element_present("//input[@id='popup_ok']")
-                                  click "popup_ok", :wait_for => :page
+                                  click "popup_ok" #:wait_for => :page
+                                  sleep 3
                                   #      elsif is_element_present("validationBatchExist") && is_visible("//input[@type='button' and @value='Ok']")
                                   #        click "//input[@type='button' and @value='Ok']"
                                   #  else
@@ -1318,7 +1332,7 @@ return a
     if options[:cash]
       
       sleep 20
-      type("seniorIdNumber", "1234") if is_visible("seniorIdNumber")
+      type("seniorIdNumber", "1234") if is_element_present("seniorIdNumber")
       sleep 25
       click("paymentToggle")
       sleep 5
@@ -1335,8 +1349,11 @@ return a
         sleep 2
         type("opsPfPaymentBean.pbaCashPaymentBean.billAmount", pf_amount)
       end
-      click("//input[@id='submitForm' and @type='submit' and @value='Submit']")
+      click("//input[@id='submitForm' and @type='submit' and @value='Submit']") if is_element_present("//input[@id='submitForm' and @type='submit' and @value='Submit']")
+      click "id=submitForm" if is_element_present( "id=submitForm")
+
       sleep 10
+
 
 
       get_confirmation if is_confirmation_present
@@ -1347,15 +1364,23 @@ return a
 #            if get_text("//html/body/div/div[2]/div[2]/form[2]/div/div[3]/input") == "OK"
 #                    click("//html/body/div/div[2]/div[2]/form[2]/div/div[3]/input")
 #            end
-#      end
+#      end 
+     click "id=reqSlip" if is_element_present("id=reqSlip")
+     click "id=printButton" if is_element_present("id=printButton")
+
      sleep 30
-     click("popup_ok")
+     click("popup_ok")   if is_element_present("popup_ok")
+     sleep 3
+     click "id=tagDocument"  if is_element_present("id=tagDocument")
      sleep 10
       if is_element_present("id=itemizedRadio")
         click("id=itemizedRadio");
-        click("//button[@type='button']");
+        click("//button[@type='button']")  if is_element_present("//button[@type='button']")
         sleep 10
-        click("css=div.success");
+        click("css=div.success")  if is_element_present("css=div.success")
+        click "id=popup_ok"  if is_element_present("id=popup_ok")
+        click "id=tagDocument"  if is_element_present("id=tagDocument")
+
         sleep 3
       end
      # if is_element_present("soaPrintingDialog")
@@ -1979,8 +2004,9 @@ return a
                 sleep 2
                 type("opsPfPaymentBean.pbaCashPaymentBean.billAmount", pf_amount)
               end
-              click("//input[@id='submitForm' and @type='submit' and @value='Submit']")
+              click("//input[@id='submitForm' and @type='submit' and @value='Submit']") if is_element_present("//input[@id='submitForm' and @type='submit' and @value='Submit']")
               sleep 5
+              click "id=submitForm" if is_element_present"id=submitForm" 
               get_confirmation if is_confirmation_present
               sleep 10
               click "//input[@value='OK']"

@@ -389,6 +389,7 @@ sleep 6
     slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "CHOLERA", :medical_case_type => "ORDINARY CASE", :with_operation => true, :rvu_code => "10060", :compute => true)
     @@ph_ref_no = slmc.ph_save_computation
     sleep 5
+    @@ph_ref_no = @@ph_ref_no.gsub(" ", "")
    # slmc.get_text("//html/body/div/div[2]/div[2]/div[17]/h2").should == "ESTIMATE"
 slmc.is_text_present("ESTIMATE").should be_true
 
@@ -412,6 +413,7 @@ slmc.is_text_present("ESTIMATE").should be_true
     slmc.get_text("memberInfo.employerMembershipID").should == ""
     @@ph1 = slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "CHOLERA", :medical_case_type => "ORDINARY CASE", :with_operation => true, :rvu_code => "10060", :compute => true)
     @@ph_ref_no = slmc.ph_save_computation
+    @@ph_ref_no = @@ph_ref_no.gsub(" ", "")
   end
 
   it "Click Main Page button" do
@@ -435,14 +437,14 @@ slmc.is_text_present("ESTIMATE").should be_true
   it "View and Reprint PhilHealth Form" do
     slmc.go_to_patient_billing_accounting_page
     slmc.pba_document_search(:select => "PhilHealth", :doc_type => "PHILHEALTH", :search_options => "DOCUMENT NUMBER", :entry => @@ph_ref_no).should be_true
-    slmc.go_to_page_using_reference_number("Reprint PhilHealth Form", @@ph_ref_no)
+    slmc.go_to_page_using_reference_number("Reprint PhilHealth Form",@@ph_ref_no)
     slmc.is_text_present("Patient Billing and Accounting Home › Document Search").should be_true
   end
 
   it "View and Reprint PhilHealth Prooflist" do
     slmc.go_to_patient_billing_accounting_page
     slmc.pba_document_search(:select => "PhilHealth", :doc_type => "PHILHEALTH", :search_options => "DOCUMENT NUMBER", :entry => @@ph_ref_no).should be_true
-    slmc.go_to_page_using_reference_number("Display Details", @@ph_ref_no)
+    slmc.go_to_page_using_reference_number("Display Details",@@ph_ref_no)
     slmc.is_text_present("PhilHealth Reference No.: #{@@ph_ref_no}").should be_true
   end
 

@@ -127,331 +127,332 @@ describe "SLMC :: Discount - Inpatient Module" do
 ################ EMPLOYEE DEPENDENT
 ####
 
-  it "EMPLOYEE DEPENDENT - Create Patient" do
-    slmc.login(@gu_user_0287, @password)
-    slmc.nursing_gu_search(:pin => @@employee_dependent)
-    slmc.print_gatepass(:no_result => true, :pin => @@employee_dependent)
-    slmc.login(@user, @password)
-    slmc.admission_search(:pin => @@employee_dependent)
-    sleep 3
-    if (slmc.get_text("//html/body/div[1]/div[2]/div[2]/div[22]/table/tbody/tr/td[4]").gsub(' ', '').include?  @@employee_dependent) && slmc.is_element_present("link=Admit Patient")
-         #("//html/body/div/div[2]/div[2]/div[22]/table/tbody/tr/td[4]")
-         result = slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE DEPENDENT", :guarantor_code => "0109092")
-                 if result == "Patient admission details successfully saved." || "Unable to print patient wristband please check your printer."
-                        admission = true
-                else
-                        admission = false
-                end
-                admission.should == true
-    else
-      if slmc.is_text_present("NO PATIENT FOUND")
-        @@employee_dependent = slmc.create_new_patient(Admission.generate_data.merge(:last_name => "Tan", :first_name => "Rachel Mae", :middle_name => "Go", :birth_day => "07/26/1987", :gender => "F"))
-        puts @@employee_dependent
-      else
-        slmc.login(@gu_user_0287, @password)
-        if slmc.verify_gu_patient_status(@@employee_dependent) != "Clinically Discharged"
-          slmc.validate_incomplete_orders(:inpatient => true, :pin => @@employee_dependent, :validate => true, :username => "sel_0287_validator", :drugs => true, :ancillary => true, :supplies => true, :orders => "multiple")
-          slmc.go_to_general_units_page
-          slmc.clinically_discharge_patient(:pin => @@employee_dependent, :pf_amount => "1000", :no_pending_order => true, :save => true).should be_true
-        end
-        slmc.login(@pba_user, @password).should be_true
-        slmc.go_to_patient_billing_accounting_page
-        slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
-        slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
-        slmc.discharge_patient_either_standard_or_das.should be_true
-
-        slmc.login(@gu_user_0287, @password).should be_true
-        slmc.nursing_gu_search(:pin => @@employee_dependent)
-       slmc.print_gatepass(:no_result => true, :pin => @@employee_dependent).should be_true
-      end
-        slmc.login(@user, @password).should be_true
-      slmc.admission_search(:pin => @@employee_dependent)
-      slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE DEPENDENT", :guarantor_code => "0109092").should == "Patient admission details successfully saved."
-    end
-  end
-  it "EMPLOYEE DEPENDENT - Create Orders" do
-     slmc.login(@gu_user_0287, @password)
-    slmc.nursing_gu_search(:pin => @@employee_dependent)
-    slmc.go_to_gu_page_for_a_given_pin("Order Page", @@employee_dependent)
-    @drugs.each do |drug, q|
-      slmc.search_order(:description => drug, :drugs => true).should be_true
-      slmc.add_returned_order(:description => drug, :quantity => "1.0", :drugs => true, :frequency => "ONCE A WEEK", :add => true).should be_true
-    end
-    @ancillary.each do |anc, q|
-      slmc.search_order(:description => anc, :ancillary => true ).should be_true
-      slmc.add_returned_order(:description => anc, :ancillary => true, :add => true).should be_true
-    end
-    @supplies.each do |supply, q|
-      slmc.search_order(:description => supply, :supplies => true ).should be_true
-      slmc.add_returned_order(:description => supply, :supplies => true, :add => true).should be_true
-    end
-    sleep 5
-    slmc.verify_ordered_items_count(:drugs => 1).should be_true
-    slmc.verify_ordered_items_count(:supplies => 1).should be_true
-    slmc.verify_ordered_items_count(:ancillary => 1).should be_true
-            slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
-    slmc.validate_orders(:drugs => true, :ancillary => true, :supplies => true, :orders => "multiple").should == 3
-    slmc.confirm_validation_all_items.should be_true
-  end
-  it "EMPLOYEE DEPENDENT - Clinical Discharge" do
-    slmc.go_to_general_units_page
-    slmc.clinically_discharge_patient(:pin => @@employee_dependent, :pf_amount => "1000", :no_pending_order => true, :save => true).should be_true
-  end
-  it "EMPLOYEE DEPENDENT - Compute PhilHealth" do
-    sleep 6
-   slmc.login(@pba_user, @password).should be_true
-    slmc.go_to_patient_billing_accounting_page
-    @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
-    slmc.go_to_page_using_visit_number("PhilHealth", @@visit_no)
-#   Sound.beep(5000, 3000)
-    @@ph1 = slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "SENILE CATARACT", :medical_case_type => "INTENSIVE CASE", :with_operation => true, :rvu_code => "11444", :compute => true)
-    slmc.ph_save_computation
-  end
-  it "EMPLOYEE DEPENDENT - Manually Encode Discount (Courtesy Discount - Across the Board= 5000k)" do
-    slmc.go_to_patient_billing_accounting_page
-    @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
-    slmc.go_to_page_using_visit_number("Discount", @@visit_no)
-    slmc.add_discount(:discount => "Courtesy Discount", :discount_scope => "ACROSS THE BOARD", :discount_type => "Fixed", :discount_rate => @@discount_rate1, :close_window => true, :save => true)
-  end
-  it "EMPLOYEE DEPENDENT - Goes to Payment Page" do
-    slmc.go_to_patient_billing_accounting_page
-    slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
-    slmc.go_to_page_using_visit_number("Payment", @@visit_no)
-  end
-  it "EMPLOYEE DEPENDENT - Checks Order Types of ordered items, Checks Discount Percentage of items" do
-    @@order_type1 = 0
-    @@order_type2 = 0
-    @@order_type3 = 0
-    @@order_type4 = 0
-
-    @@orders = @ancillary.merge(@drugs).merge(@supplies)
-    @@orders.each do |order,n|
-      item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
-      if item[:order_type] == "ORT01"
-        amt = item[:rate].to_f * n
-        @@order_type1 += amt
-      end
-      if item[:order_type] == "ORT02"
-        n_amt = item[:rate].to_f * n
-        @@order_type2 += n_amt
-      end
-      if item[:order_type] == "ORT03"
-        x_lab_amt = item[:rate].to_f * n
-        @@order_type3 += x_lab_amt
-      end
-    end
-
-    @@discount_percentage01 = 0
-    @@discount_percentage02 = 0
-    @@discount_percentage03 = 0
-
-    @@orders =  @o1.merge(@o2).merge(@o3)
-    @@orders.each do |order,n|
-      item = PatientBillingAccountingHelper::Philhealth.get_discount_covered(order)
-      if item[:order_type] == "ORT01"
-        amt = item[:discount_percentage].to_f * n
-        @@discount_percentage01 += amt
-      end
-      if item[:order_type] == "ORT02" and (item[:therapeutic_med_flag] == "Y" or item[:service_category] == "Y")
-        n_amt = item[:discount_percentage].to_f * n
-        @@discount_percentage02 += n_amt
-      end
-      if item[:order_type] == "ORT03"
-        x_lab_amt = item[:discount_percentage].to_f * n
-        @@discount_percentage03 += x_lab_amt
-      end
-    end
-  end
-  it "EMPLOYEE DEPENDENT - Computes Discount for Employee Dependent" do
-    @@ort01 = @@order_type1 * @@discount_percentage01
-    @@ort02 = @@order_type2 * @@discount_percentage02
-    @@ort03 = @@order_type3 * @@discount_percentage03
-    @@class_discount = (@@ort01) + (@@ort02) + (@@ort03)
-
-    @@gross = 0.0
-    @@orders = @drugs.merge(@ancillary).merge(@supplies)
-    @@orders.each do |order,n|
-      item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
-      amt = item[:rate].to_f * n
-      @@gross += amt  # total gross amount
-    end
-    @@gross = (@@gross * 100).round.to_f / 100
-    @@discount = slmc.compute_discounts(:unit_price => @@gross, :promo => true)
-    @@courtesy_discount = slmc.compute_courtesy_discount(:fixed => true, :amount => @@discount_rate1)
-    @@total_discount = (@@discount + @@courtesy_discount)
-    @@total_hospital_bills = @@gross - @@total_discount
-    @@balance_due = @@gross - (slmc.truncate_to(@@discount,2) + slmc.truncate_to(@@courtesy_discount,2))
-  end
-  it "EMPLOYEE DEPENDENT - Checks if Computation of Gross, Discount and Balance Due are correct" do
-    @@summary = slmc.get_billing_details_from_payment_data_entry
-
-    ((slmc.truncate_to((@@summary[:hospital_bill].to_f - @@gross),2).to_f).abs).should <= 0.02
-    ((slmc.truncate_to((@@summary[:total_hospital_bills].to_f - @@total_hospital_bills),2).to_f).abs).should <= 0.02
-    ((slmc.truncate_to((@@summary[:balance_due].to_f - @@balance_due),2).to_f).abs).should <= 0.02
-    ((slmc.truncate_to((@@summary[:discounts].to_f - @@total_discount),2).to_f).abs).should <= 0.02
-  end
-  it "EMPLOYEE DEPENDENT - PBA Discharge" do
-    slmc.go_to_patient_billing_accounting_page
-    slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
-    slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
-    slmc.select_discharge_patient_type(:type => "STANDARD", :pf_paid => true).should be_true
-    slmc.discharge_to_payment(:philhealth => true, :diagnosis => "CHOLERA").should be_true
-  end
-  it "EMPLOYEE DEPENDENT - Discharged Patient should not be able to add discount" do
-    slmc.go_to_patient_billing_accounting_page
-    @@visit_number = slmc.pba_search(:discharged => true, :pin => @@employee_dependent)
-#    slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment"] #removed "Generation of Billing Notice" 1.4.1a RC3 r28728 can be found in inhouse
-    slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment", "Endorsement Tagging", "View Endorsement History"] #removed "Generation of Billing Notice" 1.4.1a RC3 r28728 can be found in inhouse
-  end
-        ### EMPLOYEE########## EMPLOYEE########## EMPLOYEE########## EMPLOYEE########## EMPLOYEE##
-  it "EMPLOYEE - Creates patient" do
-    sleep 6
-    slmc.login(@gu_user_0287, @password)
-    slmc.nursing_gu_search(:pin => @@employee)
-    slmc.print_gatepass(:no_result => true, :pin => @@employee)
-    slmc.login(@user, @password)
-    slmc.admission_search(:pin => @@employee)
-
-    if (slmc.get_text("//html/body/div/div[2]/div[2]/div[22]/table/tbody/tr/td[4]").gsub(' ', '').include?  @@employee) && slmc.is_element_present("link=Admit Patient")
-      slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE", :guarantor_code => "0109092").should == "Patient admission details successfully saved."
-    else
-      if slmc.is_text_present("NO PATIENT FOUND")
-        @@employee = slmc.create_new_patient(Admission.generate_data.merge(:last_name => "Tan", :first_name => "Peter Carlo", :middle_name => "Go", :birth_day => "08/01/1986", :gender => "M"))
-        @@employee.should be_true
-        puts "@@employee #{@@employee}"
-      else
+    it "EMPLOYEE DEPENDENT - Create Patient" do
       slmc.login(@gu_user_0287, @password)
-        if slmc.verify_gu_patient_status(@@employee) != "Clinically Discharged"
-          slmc.validate_incomplete_orders(:inpatient => true, :pin => @@employee, :validate => true, :username => "sel_0287_validator", :drugs => true, :ancillary => true, :supplies => true, :orders => "multiple")
-          slmc.go_to_general_units_page
-          slmc.clinically_discharge_patient(:pin => @@employee, :pf_amount => "1000", :save => true).should be_true
+      slmc.nursing_gu_search(:pin => @@employee_dependent)
+      slmc.print_gatepass(:no_result => true, :pin => @@employee_dependent)
+      slmc.login(@user, @password)
+      slmc.admission_search(:pin => @@employee_dependent)
+      sleep 3
+      if (slmc.get_text("//html/body/div[1]/div[2]/div[2]/div[22]/table/tbody/tr/td[4]").gsub(' ', '').include?  @@employee_dependent) && slmc.is_element_present("link=Admit Patient")
+           #("//html/body/div/div[2]/div[2]/div[22]/table/tbody/tr/td[4]")
+           result = slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE DEPENDENT", :guarantor_code => "0109092")
+                   if result == "Patient admission details successfully saved." || "Unable to print patient wristband please check your printer."
+                          admission = true
+                  else
+                          admission = false
+                  end
+                  admission.should == true
+      else
+        if slmc.is_text_present("NO PATIENT FOUND")
+          @@employee_dependent = slmc.create_new_patient(Admission.generate_data.merge(:last_name => "Tan", :first_name => "Rachel Mae", :middle_name => "Go", :birth_day => "07/26/1987", :gender => "F"))
+          puts @@employee_dependent
+        else
+          slmc.login(@gu_user_0287, @password)
+          if slmc.verify_gu_patient_status(@@employee_dependent) != "Clinically Discharged"
+            slmc.validate_incomplete_orders(:inpatient => true, :pin => @@employee_dependent, :validate => true, :username => "sel_0287_validator", :drugs => true, :ancillary => true, :supplies => true, :orders => "multiple")
+            slmc.go_to_general_units_page
+            slmc.clinically_discharge_patient(:pin => @@employee_dependent, :pf_amount => "1000", :no_pending_order => true, :save => true).should be_true
+          end
+          slmc.login(@pba_user, @password).should be_true
+          slmc.go_to_patient_billing_accounting_page
+          slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
+          slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
+          slmc.discharge_patient_either_standard_or_das.should be_true
+  
+          slmc.login(@gu_user_0287, @password).should be_true
+          slmc.nursing_gu_search(:pin => @@employee_dependent)
+         slmc.print_gatepass(:no_result => true, :pin => @@employee_dependent).should be_true
         end
-        slmc.login(@pba_user, @password).should be_true
-        slmc.go_to_patient_billing_accounting_page
-        slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
-        slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
-        slmc.discharge_patient_either_standard_or_das.should be_true #HEEI1R1N is 100% coverage
-
-        slmc.login(@gu_user_0287, @password).should be_true
-        slmc.nursing_gu_search(:pin => @@employee)
-        slmc.print_gatepass(:no_result => true, :pin => @@employee).should be_true
+          slmc.login(@user, @password).should be_true
+        slmc.admission_search(:pin => @@employee_dependent)
+        slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE DEPENDENT", :guarantor_code => "0109092").should == "Patient admission details successfully saved."
       end
-        slmc.login(@user, @password).should be_true
-      slmc.admission_search(:pin => @@employee)
-      slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE", :guarantor_code => "0109092").should == "Patient admission details successfully saved."
     end
-  end
-  it "EMPLOYEE - Order items including special item on drugs" do
-    slmc.login(@gu_user_0287, @password).should be_true
-    slmc.nursing_gu_search(:pin => @@employee)
-    slmc.go_to_gu_page_for_a_given_pin("Order Page", @@employee)
-    @drugs.each do |drug, q|
-      slmc.search_order(:description => drug, :drugs => true).should be_true
-      slmc.add_returned_order(:description => drug, :quantity => "1.0", :drugs => true, :frequency => "ONCE A WEEK", :add => true).should be_true
+    it "EMPLOYEE DEPENDENT - Create Orders" do
+       slmc.login(@gu_user_0287, @password)
+      slmc.nursing_gu_search(:pin => @@employee_dependent)
+      slmc.go_to_gu_page_for_a_given_pin("Order Page", @@employee_dependent)
+      @drugs.each do |drug, q|
+        slmc.search_order(:description => drug, :drugs => true).should be_true
+        slmc.add_returned_order(:description => drug, :quantity => "1.0", :drugs => true, :frequency => "ONCE A WEEK", :add => true).should be_true
+      end
+      @ancillary.each do |anc, q|
+        slmc.search_order(:description => anc, :ancillary => true ).should be_true
+        slmc.add_returned_order(:description => anc, :ancillary => true, :add => true).should be_true
+      end
+      @supplies.each do |supply, q|
+        slmc.search_order(:description => supply, :supplies => true ).should be_true
+        slmc.add_returned_order(:description => supply, :supplies => true, :add => true).should be_true
+      end
+      sleep 5
+      slmc.verify_ordered_items_count(:drugs => 1).should be_true
+      slmc.verify_ordered_items_count(:supplies => 1).should be_true
+      slmc.verify_ordered_items_count(:ancillary => 1).should be_true
+              slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
+      slmc.validate_orders(:drugs => true, :ancillary => true, :supplies => true, :orders => "multiple").should == 3
+      slmc.confirm_validation_all_items.should be_true
     end
-    @ancillary.each do |anc, q|
-      slmc.search_order(:description => anc, :ancillary => true ).should be_true
-      slmc.add_returned_order(:description => anc, :ancillary => true, :add => true).should be_true
+    it "EMPLOYEE DEPENDENT - Clinical Discharge" do
+      slmc.go_to_general_units_page
+      slmc.clinically_discharge_patient(:pin => @@employee_dependent, :pf_amount => "1000", :no_pending_order => true, :save => true).should be_true
     end
-    @supplies.each do |supply, q|
-      slmc.search_order(:description => supply, :supplies => true ).should be_true
-      slmc.add_returned_order(:description => supply, :supplies => true, :add => true).should be_true
+    it "EMPLOYEE DEPENDENT - Compute PhilHealth" do
+      sleep 6
+     slmc.login(@pba_user, @password).should be_true
+      slmc.go_to_patient_billing_accounting_page
+      @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
+      slmc.go_to_page_using_visit_number("PhilHealth", @@visit_no)
+  #   Sound.beep(5000, 3000)
+      @@ph1 = slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "SENILE CATARACT", :medical_case_type => "INTENSIVE CASE", :with_operation => true, :rvu_code => "11444", :compute => true)
+      slmc.ph_save_computation
     end
-    sleep 5
-    slmc.verify_ordered_items_count(:drugs => 1).should be_true
-    slmc.verify_ordered_items_count(:supplies => 1).should be_true
-    slmc.verify_ordered_items_count(:ancillary => 1).should be_true
-    slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
-    slmc.validate_orders(:drugs => true, :ancillary => true, :supplies => true, :orders => "multiple").should == 3
-    slmc.confirm_validation_all_items.should be_true
-  end
-  it "EMPLOYEE - Clinical Discharge" do
-    slmc.go_to_general_units_page
-    slmc.clinically_discharge_patient(:pin => @@employee, :pf_amount => "1000", :no_pending_order => true, :save => true).should be_true
-  end
-  it "EMPLOYEE - Compute PhilHealth" do
-    sleep 6
-    slmc.login(@pba_user, @password).should be_true
-    slmc.go_to_patient_billing_accounting_page
-    @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
-    slmc.go_to_page_using_visit_number("PhilHealth", @@visit_no)
-    @@ph2 = slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "SENILE CATARACT", :medical_case_type => "INTENSIVE CASE", :with_operation => true, :rvu_code => "66983", :compute => true)
-    slmc.ph_save_computation
-  end
-  it "EMPLOYEE - Manually Encode Discount (Courtesy Discount - Across the Board = 5000k)" do
-    slmc.go_to_patient_billing_accounting_page
-    @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
-    slmc.go_to_page_using_visit_number("Discount", @@visit_no)
-    slmc.add_discount(:discount => "Courtesy Discount", :discount_scope => "ACROSS THE BOARD", :discount_type => "Fixed", :discount_rate => @@discount_rate2, :close_window => true, :save => true).should be_true
-  end
-  it "EMPLOYEE - Goes to Payment Page" do
-    slmc.go_to_patient_billing_accounting_page
-    slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
-    slmc.go_to_page_using_visit_number("Payment", @@visit_no)
-  end
-  it "EMPLOYEE - Checks Order Types of ordered items" do
-    @@order_type1 = 0
-    @@order_type2 = 0
-    @@order_type3 = 0
-    @@order_type4 = 0
-
-    @@orders =  @ancillary.merge(@drugs).merge(@supplies)
-    @@orders.each do |order,n|
-      item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
-      if item[:order_type] == "ORT01"
+    it "EMPLOYEE DEPENDENT - Manually Encode Discount (Courtesy Discount - Across the Board= 5000k)" do
+      slmc.go_to_patient_billing_accounting_page
+      @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
+      slmc.go_to_page_using_visit_number("Discount", @@visit_no)
+      slmc.add_discount(:discount => "Courtesy Discount", :discount_scope => "ACROSS THE BOARD", :discount_type => "Fixed", :discount_rate => @@discount_rate1, :close_window => true, :save => true)
+    end
+    it "EMPLOYEE DEPENDENT - Goes to Payment Page" do
+      slmc.go_to_patient_billing_accounting_page
+      slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
+      slmc.go_to_page_using_visit_number("Payment", @@visit_no)
+    end
+    it "EMPLOYEE DEPENDENT - Checks Order Types of ordered items, Checks Discount Percentage of items" do
+      @@order_type1 = 0
+      @@order_type2 = 0
+      @@order_type3 = 0
+      @@order_type4 = 0
+  
+      @@orders = @ancillary.merge(@drugs).merge(@supplies)
+      @@orders.each do |order,n|
+        item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
+        if item[:order_type] == "ORT01"
+          amt = item[:rate].to_f * n
+          @@order_type1 += amt
+        end
+        if item[:order_type] == "ORT02"
+          n_amt = item[:rate].to_f * n 
+          @@order_type2 += n_amt
+        end
+        if item[:order_type] == "ORT03"
+          x_lab_amt = item[:rate].to_f * n
+          @@order_type3 += x_lab_amt
+        end
+      end
+  
+      @@discount_percentage01 = 0
+      @@discount_percentage02 = 0
+      @@discount_percentage03 = 0
+  
+      @@orders =  @o1.merge(@o2).merge(@o3)
+      @@orders.each do |order,n|
+        item = PatientBillingAccountingHelper::Philhealth.get_discount_covered(order)
+        if item[:order_type] == "ORT01"
+          amt = item[:discount_percentage].to_f * n
+          @@discount_percentage01 += amt
+        end
+        if item[:order_type] == "ORT02" and (item[:therapeutic_med_flag] == "Y" or item[:service_category] == "Y")
+          n_amt = item[:discount_percentage].to_f * n
+          @@discount_percentage02 += n_amt
+        end
+        if item[:order_type] == "ORT03"
+          x_lab_amt = item[:discount_percentage].to_f * n
+          @@discount_percentage03 += x_lab_amt
+        end
+      end
+    end
+    it "EMPLOYEE DEPENDENT - Computes Discount for Employee Dependent" do
+      @@ort01 = @@order_type1 * @@discount_percentage01
+      @@ort02 = @@order_type2 * @@discount_percentage02
+      @@ort03 = @@order_type3 * @@discount_percentage03
+      @@class_discount = (@@ort01) + (@@ort02) + (@@ort03)
+  
+      @@gross = 0.0
+      @@orders = @drugs.merge(@ancillary).merge(@supplies)
+      @@orders.each do |order,n|
+        item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
         amt = item[:rate].to_f * n
-        @@order_type1 += amt
+        @@gross += amt  # total gross amount
       end
-      if item[:order_type] == "ORT02"
-        n_amt = item[:rate].to_f * n
-        @@order_type2 += n_amt
-      end
-      if item[:order_type] == "ORT03"
-        x_lab_amt = item[:rate].to_f * n
-        @@order_type3 += x_lab_amt
+      @@gross = (@@gross * 100).round.to_f / 100
+      @@discount = slmc.compute_discounts(:unit_price => @@gross, :promo => true)
+      @@courtesy_discount = slmc.compute_courtesy_discount(:fixed => true, :amount => @@discount_rate1)
+      @@total_discount = (@@discount + @@courtesy_discount)
+      @@total_hospital_bills = @@gross - @@total_discount
+      @@balance_due = @@gross - (slmc.truncate_to(@@discount,2) + slmc.truncate_to(@@courtesy_discount,2))
+    end
+    it "EMPLOYEE DEPENDENT - Checks if Computation of Gross, Discount and Balance Due are correct" do
+      @@summary = slmc.get_billing_details_from_payment_data_entry
+  
+      ((slmc.truncate_to((@@summary[:hospital_bill].to_f - @@gross),2).to_f).abs).should <= 0.02
+      ((slmc.truncate_to((@@summary[:total_hospital_bills].to_f - @@total_hospital_bills),2).to_f).abs).should <= 0.02
+      ((slmc.truncate_to((@@summary[:balance_due].to_f - @@balance_due),2).to_f).abs).should <= 0.02
+      ((slmc.truncate_to((@@summary[:discounts].to_f - @@total_discount),2).to_f).abs).should <= 0.02
+    end
+    it "EMPLOYEE DEPENDENT - PBA Discharge" do
+      slmc.go_to_patient_billing_accounting_page
+      slmc.pba_search(:with_discharge_notice => true, :pin => @@employee_dependent)
+      slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
+      slmc.select_discharge_patient_type(:type => "STANDARD", :pf_paid => true).should be_true
+      slmc.discharge_to_payment(:philhealth => true, :diagnosis => "CHOLERA").should be_true
+    end
+    it "EMPLOYEE DEPENDENT - Discharged Patient should not be able to add discount" do
+      slmc.go_to_patient_billing_accounting_page
+      @@visit_number = slmc.pba_search(:discharged => true, :pin => @@employee_dependent)
+  #    slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment"] #removed "Generation of Billing Notice" 1.4.1a RC3 r28728 can be found in inhouse
+      slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment", "Endorsement Tagging", "View Endorsement History"] #removed "Generation of Billing Notice" 1.4.1a RC3 r28728 can be found in inhouse
+    end
+          ### EMPLOYEE########## EMPLOYEE########## EMPLOYEE########## EMPLOYEE########## EMPLOYEE##
+    it "EMPLOYEE - Creates patient" do
+      sleep 6
+      slmc.login(@gu_user_0287, @password)
+      slmc.nursing_gu_search(:pin => @@employee)
+      slmc.print_gatepass(:no_result => true, :pin => @@employee)
+      slmc.login(@user, @password)
+      slmc.admission_search(:pin => @@employee)
+  
+      if (slmc.get_text("//html/body/div/div[2]/div[2]/div[22]/table/tbody/tr/td[4]").gsub(' ', '').include?  @@employee) && slmc.is_element_present("link=Admit Patient")
+        slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE", :guarantor_code => "0109092").should == "Patient admission details successfully saved."
+      else
+        if slmc.is_text_present("NO PATIENT FOUND")
+          @@employee = slmc.create_new_patient(Admission.generate_data.merge(:last_name => "Tan", :first_name => "Peter Carlo", :middle_name => "Go", :birth_day => "08/01/1986", :gender => "M"))
+          @@employee.should be_true
+          puts "@@employee #{@@employee}"
+        else
+        slmc.login(@gu_user_0287, @password)
+          if slmc.verify_gu_patient_status(@@employee) != "Clinically Discharged"
+            slmc.validate_incomplete_orders(:inpatient => true, :pin => @@employee, :validate => true, :username => "sel_0287_validator", :drugs => true, :ancillary => true, :supplies => true, :orders => "multiple")
+            slmc.go_to_general_units_page
+            slmc.clinically_discharge_patient(:pin => @@employee, :pf_amount => "1000", :save => true).should be_true
+          end
+          slmc.login(@pba_user, @password).should be_true
+          slmc.go_to_patient_billing_accounting_page
+          slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
+          slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
+          slmc.discharge_patient_either_standard_or_das.should be_true #HEEI1R1N is 100% coverage
+  
+          slmc.login(@gu_user_0287, @password).should be_true
+          slmc.nursing_gu_search(:pin => @@employee)
+          slmc.print_gatepass(:no_result => true, :pin => @@employee).should be_true
+        end
+          slmc.login(@user, @password).should be_true
+        slmc.admission_search(:pin => @@employee)
+        slmc.create_new_admission(:rch_code => "RCH07", :org_code => "0287", :diagnosis => "ULCER", :account_class => "EMPLOYEE", :guarantor_code => "0109092").should == "Patient admission details successfully saved."
       end
     end
-  end
-  it "EMPLOYEE - Computes Discount for Employee" do
-    @@gross = 0.0
-    @@orders = @drugs.merge(@ancillary).merge(@supplies)
-    @@orders.each do |order,n|
-      item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
-      amt = item[:rate].to_f * n
-      @@gross += amt  # total gross amount
+    it "EMPLOYEE - Order items including special item on drugs" do
+      slmc.login(@gu_user_0287, @password).should be_true
+      slmc.nursing_gu_search(:pin => @@employee)
+      slmc.go_to_gu_page_for_a_given_pin("Order Page", @@employee)
+      @drugs.each do |drug, q|
+        slmc.search_order(:description => drug, :drugs => true).should be_true
+        slmc.add_returned_order(:description => drug, :quantity => "1.0", :drugs => true, :frequency => "ONCE A WEEK", :add => true).should be_true
+      end
+      @ancillary.each do |anc, q|
+        slmc.search_order(:description => anc, :ancillary => true ).should be_true
+        slmc.add_returned_order(:description => anc, :ancillary => true, :add => true).should be_true
+      end
+      @supplies.each do |supply, q|
+        slmc.search_order(:description => supply, :supplies => true ).should be_true
+        slmc.add_returned_order(:description => supply, :supplies => true, :add => true).should be_true
+      end
+      sleep 5
+      slmc.verify_ordered_items_count(:drugs => 1).should be_true
+      slmc.verify_ordered_items_count(:supplies => 1).should be_true
+      slmc.verify_ordered_items_count(:ancillary => 1).should be_true
+      slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
+      slmc.validate_orders(:drugs => true, :ancillary => true, :supplies => true, :orders => "multiple").should == 3
+      slmc.confirm_validation_all_items.should be_true
     end
-    @@gross = (@@gross * 100).round.to_f / 100
-    @@discount = slmc.compute_discounts(:unit_price => @@gross, :promo => true)
-    @@courtesy_discount = slmc.compute_courtesy_discount(:fixed => true, :amount => @@discount_rate2)
-    @@total_discount = (@@discount + @@courtesy_discount)
-    @@total_hospital_bills = @@gross - @@total_discount
-    @@balance_due = @@gross - (slmc.truncate_to(@@discount,2) + slmc.truncate_to(@@courtesy_discount,2))
-  end
-  it "EMPLOYEE - Checks if Computation of Gross, Discount and Balance Due are correct" do
-    @@summary = slmc.get_billing_details_from_payment_data_entry
-
-    ((slmc.truncate_to((@@summary[:hospital_bill].to_f - @@gross),2).to_f).abs).should <= 0.02
-    ((slmc.truncate_to((@@summary[:total_hospital_bills].to_f - @@total_hospital_bills),2).to_f).abs).should <= 0.02
-    ((slmc.truncate_to((@@summary[:balance_due].to_f - @@balance_due),2).to_f).abs).should <= 0.02
-    ((slmc.truncate_to((@@summary[:discounts].to_f - @@total_discount),2).to_f).abs).should <= 0.02
-  end
-  it "EMPLOYEE - PBA Discharge" do
-    #@@employee = "1301028162"
-    slmc.login(@pba_user, @password).should be_true
-    slmc.go_to_patient_billing_accounting_page
-    slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
-    slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
-    slmc.select_discharge_patient_type(:type => "DAS").should be_true #HEEI1R1N is 100% coverage
-  end
- it "EMPLOYEE - Discharged Patient should not be able to add discount" do
-    slmc.login(@pba_user, @password).should be_true
-    slmc.go_to_patient_billing_accounting_page
-    #@@visit_number = '5206000956'
-    @@visit_number = slmc.pba_search(:discharged => true, :pin => @@employee)
-#    slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment"]
-    slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment", "Endorsement Tagging", "View Endorsement History"]
-  end
-#### #COMPANY###
+    it "EMPLOYEE - Clinical Discharge" do
+      slmc.go_to_general_units_page
+      slmc.clinically_discharge_patient(:pin => @@employee, :pf_amount => "1000", :no_pending_order => true, :save => true).should be_true
+    end
+    it "EMPLOYEE - Compute PhilHealth" do
+      sleep 6
+      slmc.login(@pba_user, @password).should be_true
+      slmc.go_to_patient_billing_accounting_page
+      @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
+      slmc.go_to_page_using_visit_number("PhilHealth", @@visit_no)
+  #    @@ph2 = slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "SENILE CATARACT", :medical_case_type => "INTENSIVE CASE", :with_operation => true, :rvu_code => "66983", :compute => true)
+      @@ph2 = slmc.philhealth_computation(:claim_type => "ACCOUNTS RECEIVABLE", :diagnosis => "SENILE CATARACT", :medical_case_type => "INTENSIVE CASE", :with_operation => true, :rvu_code => "66982", :compute => true)
+      slmc.ph_save_computation
+    end
+    it "EMPLOYEE - Manually Encode Discount (Courtesy Discount - Across the Board = 5000k)" do
+      slmc.go_to_patient_billing_accounting_page
+      @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
+      slmc.go_to_page_using_visit_number("Discount", @@visit_no)
+      slmc.add_discount(:discount => "Courtesy Discount", :discount_scope => "ACROSS THE BOARD", :discount_type => "Fixed", :discount_rate => @@discount_rate2, :close_window => true, :save => true).should be_true
+    end
+    it "EMPLOYEE - Goes to Payment Page" do
+      slmc.go_to_patient_billing_accounting_page
+      slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
+      slmc.go_to_page_using_visit_number("Payment", @@visit_no)
+    end
+    it "EMPLOYEE - Checks Order Types of ordered items" do
+      @@order_type1 = 0
+      @@order_type2 = 0
+      @@order_type3 = 0
+      @@order_type4 = 0
+  
+      @@orders =  @ancillary.merge(@drugs).merge(@supplies)
+      @@orders.each do |order,n|
+        item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
+        if item[:order_type] == "ORT01"
+          amt = item[:rate].to_f * n
+          @@order_type1 += amt
+        end
+        if item[:order_type] == "ORT02"
+          n_amt = item[:rate].to_f * n
+          @@order_type2 += n_amt
+        end
+        if item[:order_type] == "ORT03"
+          x_lab_amt = item[:rate].to_f * n
+          @@order_type3 += x_lab_amt
+        end
+      end
+    end
+    it "EMPLOYEE - Computes Discount for Employee" do
+      @@gross = 0.0
+      @@orders = @drugs.merge(@ancillary).merge(@supplies)
+      @@orders.each do |order,n|
+        item = PatientBillingAccountingHelper::Philhealth.get_inpatient_order_details_based_on_order_number(order)
+        amt = item[:rate].to_f * n
+        @@gross += amt  # total gross amount
+      end
+      @@gross = (@@gross * 100).round.to_f / 100
+      @@discount = slmc.compute_discounts(:unit_price => @@gross, :promo => true)
+      @@courtesy_discount = slmc.compute_courtesy_discount(:fixed => true, :amount => @@discount_rate2)
+      @@total_discount = (@@discount + @@courtesy_discount)
+      @@total_hospital_bills = @@gross - @@total_discount
+      @@balance_due = @@gross - (slmc.truncate_to(@@discount,2) + slmc.truncate_to(@@courtesy_discount,2))
+    end
+    it "EMPLOYEE - Checks if Computation of Gross, Discount and Balance Due are correct" do
+      @@summary = slmc.get_billing_details_from_payment_data_entry
+  
+      ((slmc.truncate_to((@@summary[:hospital_bill].to_f - @@gross),2).to_f).abs).should <= 0.02
+      ((slmc.truncate_to((@@summary[:total_hospital_bills].to_f - @@total_hospital_bills),2).to_f).abs).should <= 0.02
+      ((slmc.truncate_to((@@summary[:balance_due].to_f - @@balance_due),2).to_f).abs).should <= 0.02
+      ((slmc.truncate_to((@@summary[:discounts].to_f - @@total_discount),2).to_f).abs).should <= 0.02
+    end
+    it "EMPLOYEE - PBA Discharge" do
+      #@@employee = "1301028162"
+      slmc.login(@pba_user, @password).should be_true
+      slmc.go_to_patient_billing_accounting_page
+      slmc.pba_search(:with_discharge_notice => true, :pin => @@employee)
+      slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
+      slmc.select_discharge_patient_type(:type => "DAS").should be_true #HEEI1R1N is 100% coverage
+    end
+   it "EMPLOYEE - Discharged Patient should not be able to add discount" do
+      slmc.login(@pba_user, @password).should be_true
+      slmc.go_to_patient_billing_accounting_page
+      #@@visit_number = '5206000956'
+      @@visit_number = slmc.pba_search(:discharged => true, :pin => @@employee)
+  #    slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment"]
+      slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment", "Endorsement Tagging", "View Endorsement History"]
+    end
+ #COMPANY###
   it "COMPANY - Creates Patient" do
     sleep 6
     slmc.login(@user, @password).should be_true
@@ -614,6 +615,7 @@ describe "SLMC :: Discount - Inpatient Module" do
     @@visit_no = slmc.pba_search(:with_discharge_notice => true, :pin => @@pba_pin1)
     slmc.go_to_page_using_visit_number("Discharge Patient", slmc.visit_number)
     slmc.select_discharge_patient_type(:type => "STANDARD", :pf_paid => true).should be_false
+    sleep 6
     slmc.select_discharge_patient_type(:type => "DAS").should be_true
   end
   it "COMPANY - Discharged Patient should not be able to add discount" do
@@ -624,7 +626,13 @@ describe "SLMC :: Discount - Inpatient Module" do
     puts @@visit_number
   end
   it "COMPANY - Generate SOA" do
-    slmc.go_to_patient_billing_accounting_page  it "BOARD MEMBER DEPENDENT - Creates Patient Account Class" do
+    slmc.go_to_patient_billing_accounting_page 
+    slmc.pba_search(:discharged => true, :pin => @@pba_pin1)
+    slmc.go_to_page_using_visit_number("Generation of SOA", slmc.visit_number)
+    slmc.click_generate_official_soa.should be_true
+  end
+########################################################### BOARD MEMBER DEPENDENT
+ it "BOARD MEMBER DEPENDENT - Creates Patient Account Class" do
         sleep 6
     slmc.login(@gu_user_0287, @password)
     slmc.nursing_gu_search(:pin => @@board_member_dependent)
@@ -826,7 +834,7 @@ describe "SLMC :: Discount - Inpatient Module" do
     @@visit_number = slmc.pba_search(:discharged => true, :pin => @@board_member_dependent)
     slmc.pba_get_select_options(@@visit_number).should == ["Defer Discharge", "Generation of SOA", "PhilHealth", "Print Discharge Clearance", "Payment", "Endorsement Tagging", "View Endorsement History"]
   end
-#        ############################################################### ## BOARD MEMBER
+        ############################################################# ## BOARD MEMBER
   it "BOARD MEMBER - Creates Patient" do
     sleep 6
     slmc.login(@gu_user_0287, @password).should be_true
@@ -1033,13 +1041,7 @@ describe "SLMC :: Discount - Inpatient Module" do
     slmc.go_to_page_using_visit_number("Generation of SOA", slmc.visit_number)
     slmc.click_generate_official_soa.should be_true
   end
-    slmc.pba_search(:discharged => true, :pin => @@pba_pin1)
-    slmc.go_to_page_using_visit_number("Generation of SOA", slmc.visit_number)
-    slmc.click_generate_official_soa.should be_true
-  end
-############################################################## BOARD MEMBER DEPENDENT
-
-################################################################## Patient is Senior and Foreigner
+################################################################ Patient is Senior and Foreigner
   it "SENIOR FOREIGNER - Creates Senior Citizen Patient and Foreigner" do
     sleep 9
     slmc.login(@user, @password).should be_true
@@ -1192,7 +1194,7 @@ describe "SLMC :: Discount - Inpatient Module" do
     slmc.go_to_page_using_visit_number("Generation of SOA", slmc.visit_number)
     slmc.click_generate_official_soa.should be_true
   end
-#################################### Doctor Dependent
+################################### Doctor Dependent
   it "DOCTOR DEPENDENT - Creates Patient" do
     sleep 6
     slmc.login(@gu_user_0287, @password).should be_true
@@ -1369,7 +1371,7 @@ describe "SLMC :: Discount - Inpatient Module" do
     slmc.go_to_page_using_visit_number("Generation of SOA", slmc.visit_number)
     slmc.click_generate_official_soa.should be_true
   end
-################################# DOCTOR
+############################### DOCTOR
   it "DOCTOR - Creates Patient" do
     sleep 6
     slmc.login(@gu_user_0287, @password).should be_true

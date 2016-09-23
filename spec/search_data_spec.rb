@@ -30,8 +30,8 @@ describe "SLMC :: View and Reprinting - PBA Search Parameter" do
   end
 
 it "Search Data To Database" do
-        mysearch = 'RED_TAG'
-        ww =[]
+        mysearch = 'DT024'
+     #   ww =[]
         q = "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = 'SLMC' and TABLE_NAME LIKE 'REF%'"
         Database.connect
         ww = Database.select_all_rows(q)
@@ -49,13 +49,13 @@ it "Search Data To Database" do
                   colunm_count = mcolunm_count - 1
                   while colunm_count != -1
                         current_colunm = cc[colunm_count]
-                        vv = "SELECT count(#{current_colunm}) FROM #{current_table} WHERE UPPER(#{current_colunm}) like '%#{mysearch}%'"
+                        vv = "SELECT COUNT(#{current_colunm}) FROM #{current_table} WHERE UPPER(#{current_colunm}) like '%#{mysearch}%'"
                         Database.connect
-                        dd = Database.my_select_last_statement(vv)
+                        dd = Database.select_last_statement(vv)
                         Database.logoff
                         dd = dd.to_i
-                      #  puts "dd - #{dd}"
-                        if dd != "0.0"
+                   #   puts "dd - #{dd}"
+                        if dd != 0
                               puts "#{current_table}  #{dd}"
                         end
                         colunm_count -=1

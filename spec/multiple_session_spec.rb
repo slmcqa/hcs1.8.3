@@ -145,7 +145,7 @@ describe "Philhealth Multiple Session" do
     slmc.login(@oss_user, @password).should be_true
     slmc.go_to_das_oss
     slmc.patient_pin_search(:pin => @@oss_pin)
-    slmc.click_outpatient_order.should
+    slmc.click_outpatient_order(:pin => @@oss_pin).should
     sleep 6
     slmc.oss_add_guarantor(:acct_class => "HMO",:guarantor_type => "HMO", :guarantor_code => "ASALUS (INTELLICARE)", :coverage_choice => "percent", :coverage_amount => 50, :guarantor_add => true )
     @ancillary.each do |item, q|
@@ -175,10 +175,10 @@ puts "@@or_no = #{@@or_no}"
     sleep 3
     slmc.oss_rvu(:rvu_key => "77401", :diagnosis => "A00").should be_true
     slmc.click_add_reference(:pin => @@oss_pin,:reference_no=>@@or_no).should be_true
-
+@@order_dtl_no = []
     @@order_dtl_no = slmc.access_from_database_with_join(:table1 => "TXN_OM_ORDER_DTL", :table2 => "TXN_OM_ORDER_GRP",:condition1 => "ORDER_GRP_NO",
       :column1 => "VISIT_NO", :where_condition1 => @@visit_no,:gate => "AND",:column2 => "PERFORMING_UNIT", :where_condition2 => "0075")
-    @@order_dtl_no = @@order_dtl_no.sort
+    #@@order_dtl_no = @@order_dtl_no.sort
     sleep 1
     puts "@@order_dtl_no = #{@@order_dtl_no}"
   #@@order_dtl_no   = "[#{@@order_dtl_no}],"
@@ -255,8 +255,6 @@ puts "@@or_no = #{@@or_no}"
     #    (slmc.get_text"//html/body/div/div[2]/div[2]/form/div[11]/div[2]/div/table/tbody/tr/td[5]").should == "Not Filed"
 #                               "//html/body/div/div[2]/div[2]/form/div[11]/div[2]/div/table/tbody/tr/td[5]"
       slmc.get_text("//html/body/div[1]/div[2]/div[2]/form/div[10]/div[2]/div/table/tbody/tr/td[5]").should == "Not Filed"
-
-
 
   end
   it"PhilHealth Multiple Session - ci with already claimed items " do

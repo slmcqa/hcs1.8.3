@@ -548,6 +548,7 @@ end
                             click "//tbody[@id='finder_table_body']/tr[1]/td[2]/div", :wait_for => :not_visible, :element => "//tbody[@id='finder_table_body']/tr[1]/td[2]/div"
                             sleep 2
                             click "css=#selectDiv > input[type=\"submit\"]" if is_element_present("css=#selectDiv > input[type=\"submit\"]")
+                            click "css=input.myButton" if is_element_present( "css=input.myButton")
                             sleep 2
                             click "css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]" if is_element_present("css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]")
                             sleep 2
@@ -580,6 +581,12 @@ end
                 click "//input[@value='Search' and @type='button' and @onclick='DF.search();']", :wait_for => :element, :element => "//tbody[@id='finder_table_body']/tr[1]/td[2]/div"
                 sleep 2
                 click "//tbody[@id='finder_table_body']/tr[1]/td[2]/div", :wait_for => :not_visible, :element => "//tbody[@id='finder_table_body']/tr[1]/td[2]/div"
+                sleep 2
+                click "css=#selectDiv > input[type=\"submit\"]" if is_element_present("css=#selectDiv > input[type=\"submit\"]")
+                click "css=input.myButton" if is_element_present( "css=input.myButton")
+                sleep 2
+                click "css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]" if is_element_present("css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]")
+                sleep 2                
               end
               type("quantity", options[:quantity]) if options[:quantity]
               click("editOrder")
@@ -968,10 +975,10 @@ end
     if value == "yes"
       click "popup_ok"
       sleep 10
-      click "tagDocument", :wait_for => :page if is_element_present("tagDocument")
-      sleep 2
-      click "popup_ok", :wait_for => :page if (is_element_present("popup_ok") && (is_visible("popup_ok")))
-      sleep 4
+      click "tagDocument" if is_element_present("tagDocument")
+      sleep 6
+      click "popup_ok" if (is_element_present("popup_ok") && (is_visible("popup_ok")))
+      sleep 6
       warning = get_text("css=div[id='successMessages']")
     elsif value == "no"
       click "popup_cancel"
@@ -1012,7 +1019,7 @@ end
     if is_element_present"warningMessages"
       click "cashPaymentMode1"
       click "submitForm" ##:wait_for => :page
-          sleep 20
+          sleep 30
     end
     is_element_present("popup_ok") || is_text_present("Point of Sales")
   end
@@ -1090,25 +1097,47 @@ end
   # can choose either edit cancel or replace in order adjustment and cancellation (still unfinished, finished only CANCEL
   def oss_select_specific_order_adjustment(options={})
     count = get_css_count("css=#row>tbody>tr")
-
+    puts "count - #{count}"
+  #  item_code = @@visit_no
     count.times do |rows|
-      my_row = get_text("css=#row>tbody>tr:nth-child(#{rows + 1})>td")
-      if my_row == options[:item_code]
-        stop_row = rows
-        click "css=#row>tbody>tr:nth-child(#{stop_row + 1})>td:nth-child(5)>div>a" if options[:edit]
-        click "css=#row>tbody>tr:nth-child(#{stop_row + 1})>td:nth-child(5)>div:nth-child(2)>a" if options[:cancel]
-        click "css=#row>tbody>tr:nth-child(#{stop_row + 1})>td:nth-child(5)>div:nth-child(3)>a" if options[:replace]
-      end
+            # my_row = get_text("css=#row>tbody>tr:nth-child(#{rows + 1})>td[1]")
+            my_row = get_text("css=#row>tbody>tr:nth-child(#{rows + 1})>td")
+      
+            puts "rows  = #{rows}"
+            #      "//html/body/div[1]/div[2]/div[2]/form/div[1]/div[2]/table/tbody/tr[1]/td[1]"
+            #      "//html/body/div[1]/div[2]/div[2]/form/div[1]/div[2]/table/tbody/tr[2]/td[1]  "
+            my_row = my_row.gsub(" ","")
+            puts ":item_code = #{options[:item_code]}"
+           puts "my_row = #{my_row}"
+            if my_row == options[:item_code]
+                    stop_row = rows + 1
+                    puts "yes item code and myrow is eequal"
+                    click "css=#row>tbody>tr:nth-child(#{stop_row})>td:nth-child(5)>div>a" if options[:edit]
+                    click "css=#row>tbody>tr:nth-child(#{stop_row})>td:nth-child(5)>div:nth-child(2)>a" if options[:cancel]
+             #       click "//html/body/div[1]/div[2]/div[2]/form/div[1]/div[2]/table/tbody/tr[#{stop_row}]/td[5]/div[2]/a"  if options[:cancel]
+                   #          "//html/body/div[1]/div[2]/div[2]/form/div[1]/div[2]/table/tbody/tr[1]/td[5]/div[2]/a"
+                    click "css=#row>tbody>tr:nth-child(#{stop_row + 1})>td:nth-child(5)>div:nth-child(3)>a" if options[:replace]
+                    #        click "css=#row>tbody>tr:nth-child(#{stop_row})>td:nth-child(5)>div>a" if options[:edit]
+                    #        click "css=#row>tbody>tr:nth-child(#{stop_row})>td:nth-child(5)>div:nth-child(2)>a" if options[:cancel]
+                    #        click "css=#row>tbody>tr:nth-child(#{stop_row})>td:nth-child(5)>div:nth-child(3)>a" if options[:replace]
+                    #        "//html/body/div[1]/div[2]/div[2]/form/div[1]/div[2]/table/tbody/tr[1]/td[5]/div[2]"
+#            else
+#                    click "css=#verifyDetailAdjustment_div>center>div:nth-child(2)>input:nth-child(4)", :wait_for => :page if options[:edit]
+#                    click "css=#verifyDetailCancel_div>center>div:nth-child(2)>input:nth-child(5)", :wait_for => :page if options[:cancel]
+#                    click "css=#verifyDetailReplacement_div>center>div:nth-child(2)>input:nth-child(5)", :wait_for => :page if options[:replace]
+            end
     end
-
-    sleep 5
-    click "css=#verifyDetailAdjustment_div>center>div:nth-child(2)>input:nth-child(4)", :wait_for => :page if options[:edit]
-    click "css=#verifyDetailCancel_div>center>div:nth-child(2)>input:nth-child(5)", :wait_for => :page if options[:cancel]
-    click "css=#verifyDetailReplacement_div>center>div:nth-child(2)>input:nth-child(5)", :wait_for => :page if options[:replace]
-
+    sleep 6
+    click "xpath=(//input[@value='Proceed'])[2]" if is_element_present( "xpath=(//input[@value='Proceed'])[2]")
+    puts "proceed"
     if options[:cancel]
-      select("reason", "CANCELLATION - DOCTOR'S ORDER")
-      type("remarks", "selenium remarks")
+      
+      #select("reason", "CANCELLATION - DOCTOR'S ORDER")
+      select "id=cboCancelReason", "label=CANCELLATION - DOCTOR'S ORDER"
+
+      type("id=txtRemarks", "selenium remarks")
+      click "id=btnUpdate"
+
       click("//input[@type='button' and @onclick='saveOrderCancelForm();' and @value='OK' and @name='btnOK']")
       self.tag_document
       is_text_present("The CM was successfully updated with printTag = 'Y'.")

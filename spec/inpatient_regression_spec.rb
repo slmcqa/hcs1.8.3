@@ -220,5 +220,4 @@ describe "SLMC :: Regression of Issues for Inpatient " do
     slmc.get_value("patientAdditionalDetails.primaryLanguage.code").should == "LG048"
     slmc.get_value("patientAdditionalDetails.secondaryLanguage.code").should == "LG040"
   end
-
 end

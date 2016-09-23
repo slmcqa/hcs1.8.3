@@ -702,13 +702,13 @@ module Admission
     end
     sleep 1
     click "xpath=(//input[@value=''])[9]"
-    sleep 1
+    sleep 2
     select "id=selectedReturnReason", "label=REPUTATION AS HAVING THE BEST DOCTORS"
-    sleep 1
+    sleep 2
     click "id=addReason"
-    sleep 1
+    sleep 2
     click "id=OKreasons"
-    sleep 1
+    sleep 2
 
     if options[:additional_bed]
       click("tempRoomChargeFlag")

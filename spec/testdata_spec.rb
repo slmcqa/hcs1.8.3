@@ -3,6 +3,7 @@ require File.expand_path(File.dirname(__FILE__)) + '/../lib/slmc.rb'
 require 'spec_helper'
 require 'yaml'
 require 'ruby-plsql'
+require 'permutation'
 
 
 describe "Testdata" do
@@ -82,10 +83,34 @@ describe "Testdata" do
     slmc.close_current_browser_session
   end
   it "login" do
-             #slmc.login("adm1", @password)
-             slmc.open "/"
-                 type   	'id=username', "username"
-    type 'id=password', "password"
+# perm = Permutation.for("abc")
+# puts perm.map { |p| p.project }
+# a = perm.count
+# puts "a - #{a}"
+
+# a = (Time.now + 10*60*60).strftime("%m/%d/%Y")    
+a =  (Time.now + (24*60*60)).strftime("%m/%d/%Y")      
+puts a
+#                 Database.connect
+#                  q = "SELECT PIN FROM SLMC.TXN_PATMAS WHERE GENDER = 'F'"
+#               #  number = AdmissionHelper.range_rand(1,29).to_i
+##puts "number #{number}"                  
+#                  pin = Database.select_statement q
+#        #          pin = pin[number]
+#                  Database.logoff       
+#                  puts " pin = #{pin}"
+
+#puts "a = #{a}"
+
+    
+
+#
+#
+ # => ["abc", "acb", "bac", "bca", "cab", "cba"]
+#             #slmc.login("adm1", @password)
+#             slmc.open "/"
+#                 type   	'id=username', "username"
+#    type 'id=password', "password"
 #             slmc.admission_search(:pin => "1")
 #visit_number = "5606000061"
 #performing_unit = '0036'

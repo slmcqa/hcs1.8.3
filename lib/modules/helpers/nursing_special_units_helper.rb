@@ -82,19 +82,24 @@ module NursingSpecialUnitsHelper
     sleep 8
     click "xpath=(//button[@type='button'])[3]"
     sleep 10
-
-
     if options[:senoir]
         click("//button[@type='button']",:wait_for => :page)  if is_element_present("//button[@type='button']")
     end
-   sleep 20
+
+    sleep 30
+    puts "pin location #{Locators::NursingSpecialUnits.pin}"
+    puts "message = #{get_text("successMessages")}"
+    puts "pin #{get_text(Locators::NursingSpecialUnits.pin)}"
+    
     if (is_element_present(Locators::NursingSpecialUnits.pin) && get_text("successMessages") == "Patient information saved.")
-   sleep 50      
-      pin = get_text(Locators::NursingSpecialUnits.pin)
-      sleep Locators::NursingGeneralUnits.create_patient_waiting_time
-      return pin
-    else return get_text("patient.errors")
+          sleep 50      
+          pin = get_text(Locators::NursingSpecialUnits.pin)
+          #sleep Locators::NursingGeneralUnits.create_patient_waiting_time
+    else 
+          pin = get_text("patient.errors")
     end
+          return pin
+
   end
   def fill_out_patient_record(options={})
     type "name.lastName",  options[:last_name] if options[:last_name]
@@ -263,14 +268,20 @@ module NursingSpecialUnitsHelper
       click "link=#{options[:guarantor_code]}"
       sleep 3
       click "css=input.myButton" if is_element_present("css=input.myButton")
+      
       click "css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]" if is_element_present("css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]")
 
       select "guarantorRelationCode","SELF" if is_element_present("guarantorRelationCode")
     end
     click "previewAction", :wait_for => :page
+    sleep 7
     if is_text_present "Doctor is a required field."
-      self.doctor_finder(:doctor => "ABAD")
-      click "previewAction", :wait_for => :page
+        type "id=doctorCode", "1008"
+        sleep 3
+        click "id=responsibilityInfo" if is_element_present("id=responsibilityInfo")
+        sleep 6
+        click "previewAction", :wait_for => :page
+         sleep 7
     end
     save_button =  is_element_present("//input[@type='button' and @onclick='submitForm(this);' and @value='Save' and @name='action']") ? "//input[@type='button' and @onclick='submitForm(this);' and @value='Save' and @name='action']" : "//input[@value='Save']"
     click save_button, :wait_for => :page
@@ -1118,7 +1129,7 @@ module NursingSpecialUnitsHelper
     click "css=input.myButton" if is_element_present("css=input.myButton")
     sleep 6
     click "css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]" if is_element_present("css=#doctorSelectedPopUpDialog > div > input[type=\"submit\"]")
-
+    click 'css=#doctorSelectedPopUpDialog > div > input[type="submit"]' if is_element_present( 'css=#doctorSelectedPopUpDialog > div > input[type="submit"]')
     sleep 8
 
   end

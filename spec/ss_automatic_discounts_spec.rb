@@ -21,7 +21,7 @@ describe "SLMC :: Social Service - Automatic Discounts" do
     @fund_share = 1234.56
     @room_rate = 4167.0
 
-    @drugs = {"040000357" => 1, "040004334" => 1}
+    @drugs = {"040000357" => 1, "040004334" => 1}  
     @ancillary = {"010000003" => 1}
     @supplies = {"080100021" => 1}
   end
@@ -70,6 +70,7 @@ describe "SLMC :: Social Service - Automatic Discounts" do
   end
 
   it "Social Service : Scenario 1 - Cancel ancillary in Order Adjustment" do
+    #  @@visit_no=  "5608000293"
     slmc.login("sel_pharmacy1", @password).should be_true
     slmc.go_to_order_adjustment_and_cancellation
     slmc.ci_search(:request_unit => "0287")

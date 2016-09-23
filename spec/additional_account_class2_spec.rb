@@ -641,7 +641,7 @@ slmc.is_text_present("Fully Paid").should be_true
 #    end
     slmc.click Locators::Wellness.order_package #, :wait_for => :page
     #slmc.click "xpath=(//button[@type='button'])[3]" if slmc.is_element_present("xpath=(//button[@type='button'])[3]")
-   # sleep 10
+    sleep 10
 
     slmc.validate_package.should be_true
     slmc.validate_credentials(:username => "sel_0287_validator", :password => @password, :package => true)

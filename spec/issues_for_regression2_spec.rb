@@ -206,7 +206,7 @@ describe "SLMC :: Issues for Regression for Version 1.4" do
 
       
   end
-#
+#Bug #30002 - Pretty Picture appeared after clicking Validate button in DAS Clinical Ordering Page
 ##########  #reader's fee generate report button has been remove 1.4.2 bug#28434 and bug#28427 are not applicable
 ###########  it "Bug#28434 - [DAS] Readers Fee: Generating the Readers Fee report throws exception error" do
 ###########    slmc.login(@dastech_user, @password).should be_true
@@ -219,6 +219,7 @@ describe "SLMC :: Issues for Regression for Version 1.4" do
 ###########    slmc.click_readers_fee_generate_report
 ###########    (slmc.get_text "availableReports").should == "Reader's Fee Summary ReportRF Report on Radiology UnitsRF Report on PET & Nuclear Medicine"
 ###########  end
+
   it "Bug #29002 - [SS]: Error in changing of a patients account class from Individual to Social Service" do
     slmc.login(@user, @password).should be_true
     slmc.admission_search(:pin => "1")
@@ -450,6 +451,5 @@ describe "SLMC :: Issues for Regression for Version 1.4" do
         :column1 => "VISIT_NO",
         :condition1 => @@visit_no).to_i).should == 1
   end
-
-
+  
 end

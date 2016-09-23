@@ -75,7 +75,7 @@ it "2590 - PBA: Missing Reprint CI button in the Order No search of Adjustment a
     puts @@pin
     slmc.go_to_das_oss
     slmc.patient_pin_search(:pin => @@pin)
-    slmc.click_outpatient_order.should be_true
+    slmc.click_outpatient_order(:pin => @@pin).should be_true
     slmc.oss_add_guarantor(:guarantor_type =>  'INDIVIDUAL', :acct_class => 'INDIVIDUAL', :guarantor_add => true)
     @@orders =  @oss_ancillary.merge(@oss_drugs)
     n = 0

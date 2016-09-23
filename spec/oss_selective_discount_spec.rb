@@ -470,6 +470,7 @@ describe "SLMC :: OSS - Selective Discount (INDIVIDUAL, SOCIAL SERVICE and COMPA
   end
 
   it "OSS - Individual Patient 3 - Submit Order without payment" do
+    sleep 6
     (slmc.oss_submit_order("yes")).should == "The ORWITHCI was successfully updated with printTag = 'Y'."
   end
 
