@@ -77,8 +77,14 @@ describe "SLMC :: Discounts - Outpatient" do
   #  slmc.login('pharmacy1', @password).should be_true
     slmc.go_to_pos_ordering
     sleep 6
+     Database.connect
+            t = "SELECT DISTINCT(PIN)  FROM SLMC.TXN_ADM_ENCOUNTER WHERE ADM_FLAG <> 'Y'"
+            pf = Database.select_last_statement t
+    Database.logoff
+	pin = 	pf.to_s
+	puts  "pin - #{pin}"
     if CONFIG['db_sid'] == "QAFUNC"
-      slmc.add_pharmacy_patient(:pin =>"1501078987")
+      slmc.add_pharmacy_patient(:pin =>pin)
     else
       slmc.add_pharmacy_patient(:pin =>"1001500000")      
     end
@@ -143,6 +149,7 @@ puts ":total_discount#{totdis}"
   it "1st Scenario: POS - Submit payment successfully" do
     @@amount = slmc.get_total_net_amount.to_s
     puts "@@amount =#{@@amount }"
+		puts "#{@@covered}"
   if @@covered = true
       slmc.oss_submit_order("yes").should == "The ORWITHCI was successfully updated with printTag = 'Y'."
   else

@@ -703,17 +703,20 @@ end
   end
   def oss_add_discount(options={})
     sleep 6
-    count_before = get_css_count("css=#discountDetails>tr")
-    item_code = get_text("css=#ops_order_item_code_0")
-    puts "itemcode#{item_code}"
-    click "discountToggle" if !is_visible("discountTypeCode")
-    sleep 6
-        puts "itemcode1#{item_code}"
-    select "discountTypeCode",options[:discount_type] if options[:discount_type]
-        puts "itemcode1#{item_code}"
-        type "id=endorsed", "sel"
-       type "id=approved", "sel"
+	count_before = get_css_count("css=#discountDetails>tr")
+	item_code = get_text("css=#ops_order_item_code_0")
+	puts "itemcode#{item_code}"
+	click "discountToggle" if !is_visible("discountTypeCode")
+	sleep 6
+	puts "itemcode1#{item_code}"
+	select "discountTypeCode",options[:discount_type] if options[:discount_type]
+	puts "itemcode1#{item_code}"
+	select "id=endorsedSelect", "label=OTHERS"
+	type "id=endorsed", "asdasdas"
+	select "id=approvedSelect", "label=OTHERS"
+	type "id=approved", "dasdasda"
 
+		
     if options[:scope] == "dept"
       click "id=discountScopeDepartment"
     elsif options[:scope] == "service"
@@ -964,9 +967,11 @@ end
   # submit One Stop Shop form
   def oss_submit_order(value="def")
     #type 'seniorIdNumber', '1234' if (get_text('seniorIdNumber') == "" && is_visible('seniorIdNumber'))
-        sleep 10
+        sleep 20
     click "id=submitForm"
-    sleep 10
+
+    sleep 20
+puts "value = #{value}"		
     if is_element_present"warningMessages"
       warning = get_text("warningMessages")
     else

@@ -72,7 +72,7 @@ module Home
     #  put "open"
        open"/"
     end
-    sleep 6
+    sleep 9
     is_text_present "Welcome!  #{username}"
     
   end

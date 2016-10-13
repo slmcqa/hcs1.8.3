@@ -40,172 +40,172 @@ describe "SLMC :: Issues for Regression for Version 1.4" do
     slmc.close_current_browser_session
   end
 
-  it "Bug #30586 - DAS Clinical Ordering Page: Special button when selected is not functioning as designed" do
-    slmc.login(@dastech_user, @password).should be_true
-    slmc.go_to_ancillary_clinical_ordering_page
-    slmc.type "id=criteria", "1"
-    slmc.click "name=search", :wait_for => :page
-
-
-    #slmc.click Locators::OrderAdjustmentAndCancellation.clinical_order, :wait_for => :page
-
-    count = slmc.get_css_count("css=#occupancyList>tbody>tr")
-    count.times do |i|
-      my_row = slmc.get_text("css=#occupancyList>tbody>tr:nth-child(#{i + 1})")
-      if my_row.include?("Order Page")
-        @stop_row = i
-      end
-    end
-
-    slmc.select("css=#occupancyList>tbody>tr:nth-child(#{@stop_row + 1})>td:nth-child(9)>select", "Order Page")
-    
-    slmc.click("css=#occupancyList>tbody>tr:nth-child(#{@stop_row + 1})>td:nth-child(9)>input") #:wait_for => :page)
-    sleep 5
-    slmc.click "id=btn_ContinueAD" if slmc.is_element_present("id=btn_ContinueAD")
-    sleep 3
-
-    slmc.click("orderType5")
-    sleep 3
-    slmc.get_value("itemCodeDisplay").should == "9999"
-    slmc.is_editable("itemDesc").should be_true
-  end
-  it "Check for admitting diganosis" do # for monitoring
-    slmc.login(@user, @password).should be_true
-    slmc.admission_search(:pin => "1")
-    @@pin = slmc.create_new_patient(Admission.generate_data)
-    slmc.login(@user, @password).should be_true
-    slmc.admission_search(:pin => @@pin)
-    slmc.create_new_admission(:room_charge => "REGULAR PRIVATE", :rch_code => 'RCH08', :org_code => '0287', :diagnosis => "GASTRITIS").should == "Patient admission details successfully saved."
-    puts "@@pin - #{@@pin}"
-    sleep 6
-    @@visit_no = slmc.get_visit_number_using_pin(@@pin)
-    puts  "@@visit_no - #{@@visit_no}"
-    slmc.access_from_database(
-        :what => "DIAGNOSIS_DESCRIPTION",
-        :table => "SLMC.TXN_ADM_DIAGNOSIS",
-        :column1 => "VISIT_NO",
-        :condition1 => @@visit_no).should == "GASTRITIS"
-    (slmc.count_number_of_entries(
-        :what => "DIAGNOSIS_DESCRIPTION",
-        :table => "SLMC.TXN_ADM_DIAGNOSIS",
-        :column1 => "VISIT_NO",
-        :condition1 => @@visit_no).to_i).should == 1
-
-    slmc.admission_search(:pin => @@pin)
-    slmc.click_update_admission
-    slmc.click"//input[@type='button' and @onclick='Diagnosis.show();']", :wait_for => :element, :element => "diagnosisFinderForm"
-    slmc.type"diagnosis_entity_finder_key", "CHOLERA"
-    slmc.click"//input[@type='button' and @onclick='Diagnosis.search();' and @value='Search']", :wait_for => :element, :element => "css=#diagnosis_finder_table_body>tr.even>td:nth-child(2)>a"
-    slmc.click"css=#diagnosis_finder_table_body>tr.even>td:nth-child(2)>a"
-    sleep 2
-    slmc.click Locators::Admission.preview_reg_action
-    sleep 6
-    slmc.click"//button[@type='button']", :wait_for => :page if slmc.is_element_present("//button[@type='button']")
-    slmc.click"//html/body/div[5]/div[3]/div/button" ,:wait_for => :page if slmc.is_element_present("//html/body/div[5]/div[3]/div/button")
-
-
-    slmc.click "//input[@value='Save Admission']", :wait_for => :page
-  #  slmc.click("//input[@value='Save Admission' and @type='button' and @onclick='submitForm(this);']", :wait_for => :page)
-    slmc.access_from_database(
-        :what => "DIAGNOSIS_DESCRIPTION",
-        :table => "SLMC.TXN_ADM_DIAGNOSIS",
-        :column1 => "VISIT_NO",
-        :condition1 => @@visit_no).should == "CHOLERA"
-    (slmc.count_number_of_entries(
-        :what => "DIAGNOSIS_DESCRIPTION",
-        :table => "SLMC.TXN_ADM_DIAGNOSIS",
-        :column1 => "VISIT_NO",
-        :condition1 => @@visit_no).to_i).should == 1
-  end
-  it "Bug#32577 - Clinical Order - Drugs - STAT" do
-    slmc.nursing_gu_search(:pin => @@pin)
-    slmc.go_to_gu_page_for_a_given_pin("Order Page", @@pin)
-    slmc.search_order(:description => "049000075", :drugs => true)
-    (slmc.get_value"frequencyCode").should == ""
-    slmc.click"priorityCode"
-    sleep 1
-    (slmc.get_value"frequencyCode").should == "NOW"
-  end
-  it "Bug #29153 - [Red Tag Patient]: Access Denied upon clicking the \"Red Tag Patient\" button" do
-    slmc.nursing_gu_search(:pin => @@pin)
-    slmc.go_to_gu_page_for_a_given_pin("Order Page", @@pin)
-    @drugs.each do |item, q|
-      slmc.search_order(:description => item, :drugs => true)
-      slmc.add_returned_order(:drugs => true, :description => item, :stat => true,
-        :stock_replacement => true, :quantity => q, :frequency => "ONCE A WEEK", :add => true, :doctor => "5979")
-    end
-    @ancillary.each do |item, q|
-      slmc.search_order(:description => item, :ancillary => true)
-      slmc.add_returned_order(:ancillary => true, :description => item, :add => true, :doctor => "0126")
-    end
-    @supplies.each do |item, q|
-      slmc.search_order(:description => item, :supplies => true)
-      slmc.add_returned_order(:supplies => true, :description => item, :add => true)
-    end
-    slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
-    slmc.validate_orders(:drugs => true, :supplies => true, :ancillary => true, :orders => "multiple").should == 3
-    slmc.confirm_validation_all_items.should be_true
-    @@visit_no = slmc.get_text("banner.visitNo")
-
-    slmc.login("sel_inhouse1", @password).should be_true
-    slmc.inhouse_search(:pin => @@pin)
-    slmc.go_to_inhouse_page("Redtag Patient", @@pin)
-    slmc.redtag_patient(:flag => true, :remarks => "Redtag remarks sample", :save => true).should == "Please tick the check box to red tag patient."
-  end
-  it "Bug #28512 - [Red Tag Patient]: Created DateTime becomes null after a Red Tag patient is updated" do
-    slmc.inhouse_search(:pin => @@pin)
-    slmc.go_to_inhouse_page("Redtag Patient", @@pin)
-    slmc.redtag_patient(:remarks => "selenium1 remarks sample", :save => true).should == "Red tag patient with visit no #{@@visit_no}"
-    slmc.inhouse_search(:pin => @@pin)
-    slmc.get_attribute("css=#results>tbody>tr>td>img@alt").should == "RedTag Patient"
-    slmc.access_from_database(:what => "CREATED_DATETIME", :table => "SLMC.TXN_PBA_REDTAG", :column1 => "VISIT_NO", :condition1 => @@visit_no).strftime("%m/%d/%Y").should == Time.now.strftime("%m/%d/%Y")
-
-    slmc.inhouse_search(:pin => @@pin)
-    slmc.go_to_inhouse_page("Redtag Patient", @@pin)
-    slmc.redtag_patient(:remarks => "selenium2 remarks sample", :save => true).should == "Red tag patient with visit no #{@@visit_no}"
-    slmc.inhouse_search(:pin => @@pin)
-    slmc.get_attribute("css=#results>tbody>tr>td>img@alt").should == "RedTag Patient"
-    slmc.access_from_database(:what => "CREATED_DATETIME", :table => "SLMC.TXN_PBA_REDTAG", :column1 => "VISIT_NO", :condition1 => @@visit_no).strftime("%m/%d/%Y").should == Time.now.strftime("%m/%d/%Y")
-  end
-  it "Bug #30002 - Pretty Picture appeared after clicking Validate button in DAS Clinical Ordering Page"do
-    slmc.login(@user, @password).should be_true
-    slmc.admission_search(:pin => "1")
-    @@das_pin = slmc.create_new_patient(Admission.generate_data).gsub(' ','')
-        slmc.login(@user, @password).should be_true
-    slmc.admission_search(:pin => @@das_pin)
-    slmc.create_new_admission(:rch_code => "RCH08", :org_code => "0287", :diagnosis => "GASTRITIS", :doctor_code => "0126").should == "Patient admission details successfully saved."
-    slmc.login(@dastech_user, @password).should be_true
-#    slmc.go_to_order_adjustment_and_cancellation
-#    slmc.click_order_adjustment_quick_links(:page => "Clinical Order", :clinical_order => true).should be_true
-   slmc.go_to_ancillary_clinical_ordering_page
-    slmc.patient_pin_search(:pin => @@das_pin)
-    slmc.go_to_fnb_page_given_pin("Order Page", @@das_pin)
-    slmc.search_order(:ancillary => true, :description => "010000212").should be_true
-    slmc.add_returned_order(:ancillary => true, :description => "010000212", :add => true).should be_true
-    slmc.submit_added_order#.should be_true
-    slmc.validate_orders(:ancillary => true, :orders => "single")
-    slmc.confirm_validation_all_items.should be_true
-  end
-#  it "Bug #28373 - [Guest Room Tagging]: Guest Room Viewing Role not working" do #temporarily removed
-#    slmc.login("guest_viewer1", @password).should be_true
-#    slmc.go_to_guest_viewing_landing_page.should be_true
+#  it "Bug #30586 - DAS Clinical Ordering Page: Special button when selected is not functioning as designed" do
+#    slmc.login(@dastech_user, @password).should be_true
+#    slmc.go_to_ancillary_clinical_ordering_page
+#    slmc.type "id=criteria", "1"
+#    slmc.click "name=search", :wait_for => :page
+#
+#
+#    #slmc.click Locators::OrderAdjustmentAndCancellation.clinical_order, :wait_for => :page
+#
+#    count = slmc.get_css_count("css=#occupancyList>tbody>tr")
+#    count.times do |i|
+#      my_row = slmc.get_text("css=#occupancyList>tbody>tr:nth-child(#{i + 1})")
+#      if my_row.include?("Order Page")
+#        @stop_row = i
+#      end
+#    end
+#
+#    slmc.select("css=#occupancyList>tbody>tr:nth-child(#{@stop_row + 1})>td:nth-child(9)>select", "Order Page")
+#    
+#    slmc.click("css=#occupancyList>tbody>tr:nth-child(#{@stop_row + 1})>td:nth-child(9)>input") #:wait_for => :page)
+#    sleep 5
+#    slmc.click "id=btn_ContinueAD" if slmc.is_element_present("id=btn_ContinueAD")
+#    sleep 3
+#
+#    slmc.click("orderType5")
+#    sleep 3
+#    slmc.get_value("itemCodeDisplay").should == "9999"
+#    slmc.is_editable("itemDesc").should be_true
 #  end
-  it "Bug #28516 - [DON] Discharge Instruction: Nurses Teaching Print action, returns error page" do
-    slmc.login(@user, @password).should be_true
-    slmc.nursing_gu_search(:pin => @@pin)
-    slmc.go_to_gu_page_for_a_given_pin("Discharge Instructions\302\240", @@pin)
-    slmc.add_final_diagnosis.should be_true
-    slmc.type("txtFinalDiagnosis", "abcdefghij" * 30)
-    (slmc.get_value("txtFinalDiagnosis").length).should == 255
-    slmc.click("css=a[title=\"Medication\"] > span")
-    slmc.type("name=medicationInstructions", "abcdefghij" * 100)
-    slmc.get_value"name=medicationInstructions"
-    slmc.click("id=btnSave", :wait_for => :page)
-    slmc.is_text_present("Instructions printed successfully").should be_true
-    
-
-      
-  end
+#  it "Check for admitting diganosis" do # for monitoring
+#    slmc.login(@user, @password).should be_true
+#    slmc.admission_search(:pin => "1")
+#    @@pin = slmc.create_new_patient(Admission.generate_data)
+#    slmc.login(@user, @password).should be_true
+#    slmc.admission_search(:pin => @@pin)
+#    slmc.create_new_admission(:room_charge => "REGULAR PRIVATE", :rch_code => 'RCH08', :org_code => '0287', :diagnosis => "GASTRITIS").should == "Patient admission details successfully saved."
+#    puts "@@pin - #{@@pin}"
+#    sleep 6
+#    @@visit_no = slmc.get_visit_number_using_pin(@@pin)
+#    puts  "@@visit_no - #{@@visit_no}"
+#    slmc.access_from_database(
+#        :what => "DIAGNOSIS_DESCRIPTION",
+#        :table => "SLMC.TXN_ADM_DIAGNOSIS",
+#        :column1 => "VISIT_NO",
+#        :condition1 => @@visit_no).should == "GASTRITIS"
+#    (slmc.count_number_of_entries(
+#        :what => "DIAGNOSIS_DESCRIPTION",
+#        :table => "SLMC.TXN_ADM_DIAGNOSIS",
+#        :column1 => "VISIT_NO",
+#        :condition1 => @@visit_no).to_i).should == 1
+#
+#    slmc.admission_search(:pin => @@pin)
+#    slmc.click_update_admission
+#    slmc.click"//input[@type='button' and @onclick='Diagnosis.show();']", :wait_for => :element, :element => "diagnosisFinderForm"
+#    slmc.type"diagnosis_entity_finder_key", "CHOLERA"
+#    slmc.click"//input[@type='button' and @onclick='Diagnosis.search();' and @value='Search']", :wait_for => :element, :element => "css=#diagnosis_finder_table_body>tr.even>td:nth-child(2)>a"
+#    slmc.click"css=#diagnosis_finder_table_body>tr.even>td:nth-child(2)>a"
+#    sleep 2
+#    slmc.click Locators::Admission.preview_reg_action
+#    sleep 6
+#    slmc.click"//button[@type='button']", :wait_for => :page if slmc.is_element_present("//button[@type='button']")
+#    slmc.click"//html/body/div[5]/div[3]/div/button" ,:wait_for => :page if slmc.is_element_present("//html/body/div[5]/div[3]/div/button")
+#
+#
+#    slmc.click "//input[@value='Save Admission']", :wait_for => :page
+#  #  slmc.click("//input[@value='Save Admission' and @type='button' and @onclick='submitForm(this);']", :wait_for => :page)
+#    slmc.access_from_database(
+#        :what => "DIAGNOSIS_DESCRIPTION",
+#        :table => "SLMC.TXN_ADM_DIAGNOSIS",
+#        :column1 => "VISIT_NO",
+#        :condition1 => @@visit_no).should == "CHOLERA"
+#    (slmc.count_number_of_entries(
+#        :what => "DIAGNOSIS_DESCRIPTION",
+#        :table => "SLMC.TXN_ADM_DIAGNOSIS",
+#        :column1 => "VISIT_NO",
+#        :condition1 => @@visit_no).to_i).should == 1
+#  end
+#  it "Bug#32577 - Clinical Order - Drugs - STAT" do
+#    slmc.nursing_gu_search(:pin => @@pin)
+#    slmc.go_to_gu_page_for_a_given_pin("Order Page", @@pin)
+#    slmc.search_order(:description => "049000075", :drugs => true)
+#    (slmc.get_value"frequencyCode").should == ""
+#    slmc.click"priorityCode"
+#    sleep 1
+#    (slmc.get_value"frequencyCode").should == "NOW"
+#  end
+#  it "Bug #29153 - [Red Tag Patient]: Access Denied upon clicking the \"Red Tag Patient\" button" do
+#    slmc.nursing_gu_search(:pin => @@pin)
+#    slmc.go_to_gu_page_for_a_given_pin("Order Page", @@pin)
+#    @drugs.each do |item, q|
+#      slmc.search_order(:description => item, :drugs => true)
+#      slmc.add_returned_order(:drugs => true, :description => item, :stat => true,
+#        :stock_replacement => true, :quantity => q, :frequency => "ONCE A WEEK", :add => true, :doctor => "5979")
+#    end
+#    @ancillary.each do |item, q|
+#      slmc.search_order(:description => item, :ancillary => true)
+#      slmc.add_returned_order(:ancillary => true, :description => item, :add => true, :doctor => "0126")
+#    end
+#    @supplies.each do |item, q|
+#      slmc.search_order(:description => item, :supplies => true)
+#      slmc.add_returned_order(:supplies => true, :description => item, :add => true)
+#    end
+#    slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
+#    slmc.validate_orders(:drugs => true, :supplies => true, :ancillary => true, :orders => "multiple").should == 3
+#    slmc.confirm_validation_all_items.should be_true
+#    @@visit_no = slmc.get_text("banner.visitNo")
+#
+#    slmc.login("sel_inhouse1", @password).should be_true
+#    slmc.inhouse_search(:pin => @@pin)
+#    slmc.go_to_inhouse_page("Redtag Patient", @@pin)
+#    slmc.redtag_patient(:flag => true, :remarks => "Redtag remarks sample", :save => true).should == "Please tick the check box to red tag patient."
+#  end
+#  it "Bug #28512 - [Red Tag Patient]: Created DateTime becomes null after a Red Tag patient is updated" do
+#    slmc.inhouse_search(:pin => @@pin)
+#    slmc.go_to_inhouse_page("Redtag Patient", @@pin)
+#    slmc.redtag_patient(:remarks => "selenium1 remarks sample", :save => true).should == "Red tag patient with visit no #{@@visit_no}"
+#    slmc.inhouse_search(:pin => @@pin)
+#    slmc.get_attribute("css=#results>tbody>tr>td>img@alt").should == "RedTag Patient"
+#    slmc.access_from_database(:what => "CREATED_DATETIME", :table => "SLMC.TXN_PBA_REDTAG", :column1 => "VISIT_NO", :condition1 => @@visit_no).strftime("%m/%d/%Y").should == Time.now.strftime("%m/%d/%Y")
+#
+#    slmc.inhouse_search(:pin => @@pin)
+#    slmc.go_to_inhouse_page("Redtag Patient", @@pin)
+#    slmc.redtag_patient(:remarks => "selenium2 remarks sample", :save => true).should == "Red tag patient with visit no #{@@visit_no}"
+#    slmc.inhouse_search(:pin => @@pin)
+#    slmc.get_attribute("css=#results>tbody>tr>td>img@alt").should == "RedTag Patient"
+#    slmc.access_from_database(:what => "CREATED_DATETIME", :table => "SLMC.TXN_PBA_REDTAG", :column1 => "VISIT_NO", :condition1 => @@visit_no).strftime("%m/%d/%Y").should == Time.now.strftime("%m/%d/%Y")
+#  end
+#  it "Bug #30002 - Pretty Picture appeared after clicking Validate button in DAS Clinical Ordering Page"do
+#    slmc.login(@user, @password).should be_true
+#    slmc.admission_search(:pin => "1")
+#    @@das_pin = slmc.create_new_patient(Admission.generate_data).gsub(' ','')
+#        slmc.login(@user, @password).should be_true
+#    slmc.admission_search(:pin => @@das_pin)
+#    slmc.create_new_admission(:rch_code => "RCH08", :org_code => "0287", :diagnosis => "GASTRITIS", :doctor_code => "0126").should == "Patient admission details successfully saved."
+#    slmc.login(@dastech_user, @password).should be_true
+##    slmc.go_to_order_adjustment_and_cancellation
+##    slmc.click_order_adjustment_quick_links(:page => "Clinical Order", :clinical_order => true).should be_true
+#   slmc.go_to_ancillary_clinical_ordering_page
+#    slmc.patient_pin_search(:pin => @@das_pin)
+#    slmc.go_to_fnb_page_given_pin("Order Page", @@das_pin)
+#    slmc.search_order(:ancillary => true, :description => "010000212").should be_true
+#    slmc.add_returned_order(:ancillary => true, :description => "010000212", :add => true).should be_true
+#    slmc.submit_added_order#.should be_true
+#    slmc.validate_orders(:ancillary => true, :orders => "single")
+#    slmc.confirm_validation_all_items.should be_true
+#  end
+##  it "Bug #28373 - [Guest Room Tagging]: Guest Room Viewing Role not working" do #temporarily removed
+##    slmc.login("guest_viewer1", @password).should be_true
+##    slmc.go_to_guest_viewing_landing_page.should be_true
+##  end
+#  it "Bug #28516 - [DON] Discharge Instruction: Nurses Teaching Print action, returns error page" do
+#    slmc.login(@user, @password).should be_true
+#    slmc.nursing_gu_search(:pin => @@pin)
+#    slmc.go_to_gu_page_for_a_given_pin("Discharge Instructions\302\240", @@pin)
+#    slmc.add_final_diagnosis.should be_true
+#    slmc.type("txtFinalDiagnosis", "abcdefghij" * 30)
+#    (slmc.get_value("txtFinalDiagnosis").length).should == 255
+#    slmc.click("css=a[title=\"Medication\"] > span")
+#    slmc.type("name=medicationInstructions", "abcdefghij" * 100)
+#    slmc.get_value"name=medicationInstructions"
+#    slmc.click("id=btnSave", :wait_for => :page)
+#    slmc.is_text_present("Instructions printed successfully").should be_true
+#    
+#
+#      
+#  end
 #Bug #30002 - Pretty Picture appeared after clicking Validate button in DAS Clinical Ordering Page
 ##########  #reader's fee generate report button has been remove 1.4.2 bug#28434 and bug#28427 are not applicable
 ###########  it "Bug#28434 - [DAS] Readers Fee: Generating the Readers Fee report throws exception error" do

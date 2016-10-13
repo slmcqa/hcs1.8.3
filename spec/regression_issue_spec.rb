@@ -47,217 +47,217 @@ describe "SLMC :: Issues for Regression for Version 1.4" do
     slmc.close_current_browser_session
   end
 
-#        it "Bug#41063 - Checklist order: Re-include UOM" do
-#               ################### #OR SCENARIO
-#                slmc.login(@or_user, @password).should be_true
-#                @@or_pin = slmc.or_create_patient_record(@or_patient.merge(:admit => true)).gsub(' ', '')
-#                slmc.go_to_occupancy_list_page
-#                slmc.patient_pin_search(:pin => @@or_pin)
-#                slmc.go_to_su_page_for_a_given_pin("Checklist Order", @@or_pin)
-#                slmc.click "id=nonProcedureFlag"
-#                slmc.type "id=oif_entity_finder_key", "04400678"
-#                slmc.click "name=search"
-#                sleep 3
-#                slmc.is_element_present('//*[@id="uom"]')
-#                slmc.click "//input[@value='Add']", :wait_for =>:page
-#                slmc.is_element_present('//*[@id="uom"]')
-#                slmc.type "id=aQuantity", "1"
-#                slmc.type "id=sQuantity", "1"
-#                slmc.click "//input[@value='Add']", :wait_for =>:page
-#                order = slmc.get_text('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a')
-#                (order).should_not == nil
-#                sleep 3
-#                slmc.click(('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a'), :wait_for =>:page)
-#                sleep 3
-#                slmc.click "name=delete",:wait_for =>:page
-#                slmc.is_text_present("deleted successfully.")
-#                puts @@or_pin
-#                sleep 6
-#               ########### #ER SCENARIO
-#               sleep 20
-#               slmc.click "link=Home", :wait_for => :page
-#                slmc.login("er1", @password).should be_true
-#                slmc.click "link=E.R. Landing Page",:wait_for =>:page
-#                mycount = slmc.get_xpath_count('//html/body/div/div[2]/div[2]/table/tbody')
-#                puts "mycount = #{mycount}"
-#                sleep 30
-#                x= 1
-#                while x != mycount
-#                        if x == 1
-#                              status = slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[1]/td[8]")
-#                                                             
-#                            else
-#                               status = slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[#{x}]/td[8]")
-#                        end
-#                        if status == ""
-#                              if x== 1
-#                                #get pin
-#                                  pin =  slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[1]/td[3]")
-#                               
-#                                  
-#                                  pin = pin.gsub(' ', '')
-#                                  x = mycount
-#                              else
-#                                   pin=  slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[#{x}]/td[3]")
-#                                  pin = pin.gsub(' ', '')
-#                                   x = mycount
-#                              end
-#
-#                         else
-#                               if x == 20
-#                                    slmc.click("link=Next ›") 
-#                                    sleep 8
-#                                    x =1
-#                               else
-#                                  x = x + 1
-#                              end
-#                        end
-#
-#                end
-#                slmc.patient_pin_search(:pin => pin)
-#                slmc.go_to_su_page_for_a_given_pin("Checklist Order", pin)
-#                slmc.click "id=nonProcedureFlag"
-#                slmc.type "id=oif_entity_finder_key", "04400678"
-#                slmc.click "name=search"
-#                sleep 3
-#                slmc.is_element_present('//*[@id="uom"]')
-#                slmc.click "//input[@value='Add']", :wait_for =>:page
-#                slmc.is_element_present('//*[@id="uom"]')
-#                slmc.type "id=aQuantity", "1"
-#                slmc.type "id=sQuantity", "1"
-#                slmc.click "//input[@value='Add']", :wait_for =>:page
-#                sleep 3
-#                order = slmc.get_text('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a')
-#                sleep 3
-#                (order).should_not == nil
-#                slmc.click "name=validateOrder", :wait_for =>:page
-#                slmc.click "name=orderCartDetailNumber"
-#                slmc.click "id=delete"
-#                slmc.click "//input[@value='Proceed']", :wait_for =>:page
-#                slmc.is_text_present("deleted successfully.")
-#               ############################ #DR SCENARIO
-#               sleep 20
-#                      slmc.click "link=Home", :wait_for => :page
-#                slmc.login("dr1", @password).should be_true
-#                slmc.click "link=Nursing Special Units Landing Page",:wait_for =>:page
-#                slmc.click "link=Occupancy List",:wait_for =>:page
-#                mycount = slmc.get_xpath_count('//html/body/div/div[2]/div[2]/table/tbody')
-#                x= 1
-#                while x != mycount
-#                        if x == 1
-#                              status = slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr/td[8]")
-#
-#                            else
-#                               status = slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr[#{x}]/td[8]")
-#                        end
-#                        if status == ""
-#                              if x== 1
-#                                #get pin
-#                                  pin =  slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr/td[3]")
-#                                  pin = pin.gsub(' ', '')
-#                                  x = mycount
-#                              else
-#                                  pin=    slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr[#{x}]/td[3]")
-#                                  pin = pin.gsub(' ', '')
-#                                  x = mycount
-#                              end
-#
-#                         else
-#                              if x == 20
-#                                  slmc.click "link=Next ›", :wait_for =>:page
-#                                  x = 1
-#                              else
-#                                  x = x + 1
-#                              end
-#
-#                        end
-#                end
-#                slmc.patient_pin_search(:pin => pin)
-#                slmc.go_to_su_page_for_a_given_pin("Checklist Order", pin)
-#                slmc.click "id=nonProcedureFlag"
-#                slmc.type "id=oif_entity_finder_key", "04400678"
-#                slmc.click "name=search"
-#                sleep 3
-#                slmc.is_element_present('//*[@id="uom"]')
-#                slmc.click "//input[@value='Add']", :wait_for =>:page
-#                slmc.is_element_present('//*[@id="uom"]')
-#                slmc.type "id=aQuantity", "1"
-#                slmc.type "id=sQuantity", "1"
-#                slmc.click "//input[@value='Add']", :wait_for =>:page
-#                sleep 3
-#                order = slmc.get_text('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a')
-#                sleep 3
-#                (order).should_not == nil
-#                slmc.click "name=validateOrder", :wait_for =>:page
-#                slmc.click "name=orderCartDetailNumber"
-#                slmc.click "id=delete"
-#                slmc.click "//input[@value='Proceed']", :wait_for =>:page
-#                slmc.is_text_present("deleted successfully.")
-#
-#        end
-#        it "Feature #59377 - Order List modifications" do
-#               ##################### #General Units - Order List
-#               sleep 10
-#           #          slmc.click "link=Home", :wait_for => :page
-#            slmc.login(@user, @password).should be_true
-#            slmc.admission_search(:pin => "Test")
-#            pin = slmc.create_new_patient(@inpatient.merge!(:gender => 'F')).gsub(' ', '')
-#
-#            sleep 6
-#            slmc.click "link=Home", :wait_for => :page
-#            slmc.login(@user, @password).should be_true
-#            slmc.admission_search(:pin => pin).should be_true
-#            slmc.create_new_admission(:account_class => "INDIVIDUAL", :org_code => "0287", :rch_code => "RCH08",
-#              :room_charge => "REGULAR PRIVATE", :diagnosis => "GASTRITIS", :doctor_code => "6726",:package => "PLAN A FEMALE").should == "Patient admission details successfully saved."
-#           sleep 20
-#            slmc.login(@user, @password).should be_true
-#            slmc.go_to_general_units_page
-#            slmc.nursing_gu_search(:pin => pin)
-#            slmc.go_to_gu_page_for_a_given_pin("Order Page", pin)
-#            @drugs.each do |item, q|
-#              slmc.search_order(:description => item, :drugs => true).should be_true
-#              slmc.add_returned_order(:drugs => true, :description => item,
-#                :quantity => q, :frequency => "ONCE A WEEK", :add => true, :doctor => "6726").should be_true
-#
-#            end
-#            @ancillary.each do |item, q|
-#              slmc.search_order(:description => item, :ancillary => true).should be_true
-#              slmc.add_returned_order(:ancillary => true, :description => item, :add => true, :doctor => "0126").should be_true
-#            end
-#            @supplies.each do |item, q|
-#              slmc.search_order(:description => item, :supplies => true).should be_true
-#              slmc.add_returned_order(:supplies => true, :description => item, :add => true).should be_true
-#            end
-#          #  slmc.beep
-#            @oxygen.each do |item, q|
-#              slmc.search_order(:description => item, :medical_gases => true).should be_true
-#              slmc.add_returned_order(:medical_gases => true, :description => item, :device => "NASAL CANNULA", :lpm => 1,:add => true).should be_true
-#            end
-#
-#              @others.each do |item, q|
-#              slmc.search_order(:description => item, :others => true).should be_true
-#              slmc.add_returned_order(:others => true, :description => item, :add => true).should be_true
-#            end
-#
-#            sleep 8
-#            slmc.verify_ordered_items_count(:drugs => 1).should be_true
-#            slmc.verify_ordered_items_count(:ancillary => 1).should be_true
-#            slmc.verify_ordered_items_count(:supplies => 1).should be_true
-#            slmc.verify_ordered_items_count(:oxygen => 1).should be_true
-#            slmc.verify_ordered_items_count(:others => 1).should be_true
-#            slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
-#            slmc.validate_orders(:drugs => true, :ancillary => true, :supplies => true, :orders => "multiple", :oxygen => true, :others => true).should == 5
-#            slmc.confirm_validation_all_items.should be_true
-#            sleep 6
-#            slmc.go_to_general_units_page
-#            slmc.nursing_gu_search(:pin => pin)
-#            slmc.go_to_gu_page_for_a_given_pin("Order List", pin)
-#            (slmc.get_text("//html/body/div/div[2]/div[2]/div[5]/ul/li/a/span")).should == "ORDERS"
-#            (slmc.get_text("//html/body/div/div[2]/div[2]/div[5]/ul/li[2]/a/span")).should == "CHECKLIST"
-#            (slmc.get_text("//html/body/div/div[2]/div[2]/div[5]/ul/li[3]/a/span")).should == "PACKAGE"
-#
-#
-#          end
+        it "Bug#41063 - Checklist order: Re-include UOM" do
+               ################### #OR SCENARIO
+                slmc.login(@or_user, @password).should be_true
+                @@or_pin = slmc.or_create_patient_record(@or_patient.merge(:admit => true)).gsub(' ', '')
+                slmc.go_to_occupancy_list_page
+                slmc.patient_pin_search(:pin => @@or_pin)
+                slmc.go_to_su_page_for_a_given_pin("Checklist Order", @@or_pin)
+                slmc.click "id=nonProcedureFlag"
+                slmc.type "id=oif_entity_finder_key", "04400678"
+                slmc.click "name=search"
+                sleep 3
+                slmc.is_element_present('//*[@id="uom"]')
+                slmc.click "//input[@value='Add']", :wait_for =>:page
+                slmc.is_element_present('//*[@id="uom"]')
+                slmc.type "id=aQuantity", "1"
+                slmc.type "id=sQuantity", "1"
+                slmc.click "//input[@value='Add']", :wait_for =>:page
+                order = slmc.get_text('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a')
+                (order).should_not == nil
+                sleep 3
+                slmc.click(('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a'), :wait_for =>:page)
+                sleep 3
+                slmc.click "name=delete",:wait_for =>:page
+                slmc.is_text_present("deleted successfully.")
+                puts @@or_pin
+                sleep 6
+               ########### #ER SCENARIO
+               sleep 20
+               slmc.click "link=Home", :wait_for => :page
+                slmc.login("er1", @password).should be_true
+                slmc.click "link=E.R. Landing Page",:wait_for =>:page
+                mycount = slmc.get_xpath_count('//html/body/div/div[2]/div[2]/table/tbody')
+                puts "mycount = #{mycount}"
+                sleep 30
+                x= 1
+                while x != mycount
+                        if x == 1
+                              status = slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[1]/td[8]")
+                                                             
+                            else
+                               status = slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[#{x}]/td[8]")
+                        end
+                        if status == ""
+                              if x== 1
+                                #get pin
+                                  pin =  slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[1]/td[3]")
+                               
+                                  
+                                  pin = pin.gsub(' ', '')
+                                  x = mycount
+                              else
+                                   pin=  slmc.get_text("//html/body/div[1]/div[2]/div[2]/table/tbody/tr[#{x}]/td[3]")
+                                  pin = pin.gsub(' ', '')
+                                   x = mycount
+                              end
+
+                         else
+                               if x == 20
+                                    slmc.click("link=Next ›") 
+                                    sleep 8
+                                    x =1
+                               else
+                                  x = x + 1
+                              end
+                        end
+
+                end
+                slmc.patient_pin_search(:pin => pin)
+                slmc.go_to_su_page_for_a_given_pin("Checklist Order", pin)
+                slmc.click "id=nonProcedureFlag"
+                slmc.type "id=oif_entity_finder_key", "04400678"
+                slmc.click "name=search"
+                sleep 3
+                slmc.is_element_present('//*[@id="uom"]')
+                slmc.click "//input[@value='Add']", :wait_for =>:page
+                slmc.is_element_present('//*[@id="uom"]')
+                slmc.type "id=aQuantity", "1"
+                slmc.type "id=sQuantity", "1"
+                slmc.click "//input[@value='Add']", :wait_for =>:page
+                sleep 3
+                order = slmc.get_text('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a')
+                sleep 3
+                (order).should_not == nil
+                slmc.click "name=validateOrder", :wait_for =>:page
+                slmc.click "name=orderCartDetailNumber"
+                slmc.click "id=delete"
+                slmc.click "//input[@value='Proceed']", :wait_for =>:page
+                slmc.is_text_present("deleted successfully.")
+               ############################ #DR SCENARIO
+               sleep 20
+                      slmc.click "link=Home", :wait_for => :page
+                slmc.login("dr1", @password).should be_true
+                slmc.click "link=Nursing Special Units Landing Page",:wait_for =>:page
+                slmc.click "link=Occupancy List",:wait_for =>:page
+                mycount = slmc.get_xpath_count('//html/body/div/div[2]/div[2]/table/tbody')
+                x= 1
+                while x != mycount
+                        if x == 1
+                              status = slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr/td[8]")
+
+                            else
+                               status = slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr[#{x}]/td[8]")
+                        end
+                        if status == ""
+                              if x== 1
+                                #get pin
+                                  pin =  slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr/td[3]")
+                                  pin = pin.gsub(' ', '')
+                                  x = mycount
+                              else
+                                  pin=    slmc.get_text("//html/body/div/div[2]/div[2]/table/tbody/tr[#{x}]/td[3]")
+                                  pin = pin.gsub(' ', '')
+                                  x = mycount
+                              end
+
+                         else
+                              if x == 20
+                                  slmc.click "link=Next ›", :wait_for =>:page
+                                  x = 1
+                              else
+                                  x = x + 1
+                              end
+
+                        end
+                end
+                slmc.patient_pin_search(:pin => pin)
+                slmc.go_to_su_page_for_a_given_pin("Checklist Order", pin)
+                slmc.click "id=nonProcedureFlag"
+                slmc.type "id=oif_entity_finder_key", "04400678"
+                slmc.click "name=search"
+                sleep 3
+                slmc.is_element_present('//*[@id="uom"]')
+                slmc.click "//input[@value='Add']", :wait_for =>:page
+                slmc.is_element_present('//*[@id="uom"]')
+                slmc.type "id=aQuantity", "1"
+                slmc.type "id=sQuantity", "1"
+                slmc.click "//input[@value='Add']", :wait_for =>:page
+                sleep 3
+                order = slmc.get_text('//html/body/div/div[2]/div[2]/form/div[4]/div[2]/div[4]/table/tbody/tr/td/a')
+                sleep 3
+                (order).should_not == nil
+                slmc.click "name=validateOrder", :wait_for =>:page
+                slmc.click "name=orderCartDetailNumber"
+                slmc.click "id=delete"
+                slmc.click "//input[@value='Proceed']", :wait_for =>:page
+                slmc.is_text_present("deleted successfully.")
+
+        end
+        it "Feature #59377 - Order List modifications" do
+               ##################### #General Units - Order List
+               sleep 10
+           #          slmc.click "link=Home", :wait_for => :page
+            slmc.login(@user, @password).should be_true
+            slmc.admission_search(:pin => "Test")
+            pin = slmc.create_new_patient(@inpatient.merge!(:gender => 'F')).gsub(' ', '')
+
+            sleep 6
+            slmc.click "link=Home", :wait_for => :page
+            slmc.login(@user, @password).should be_true
+            slmc.admission_search(:pin => pin).should be_true
+            slmc.create_new_admission(:account_class => "INDIVIDUAL", :org_code => "0287", :rch_code => "RCH08",
+              :room_charge => "REGULAR PRIVATE", :diagnosis => "GASTRITIS", :doctor_code => "6726",:package => "PLAN A FEMALE").should == "Patient admission details successfully saved."
+           sleep 20
+            slmc.login(@user, @password).should be_true
+            slmc.go_to_general_units_page
+            slmc.nursing_gu_search(:pin => pin)
+            slmc.go_to_gu_page_for_a_given_pin("Order Page", pin)
+            @drugs.each do |item, q|
+              slmc.search_order(:description => item, :drugs => true).should be_true
+              slmc.add_returned_order(:drugs => true, :description => item,
+                :quantity => q, :frequency => "ONCE A WEEK", :add => true, :doctor => "6726").should be_true
+
+            end
+            @ancillary.each do |item, q|
+              slmc.search_order(:description => item, :ancillary => true).should be_true
+              slmc.add_returned_order(:ancillary => true, :description => item, :add => true, :doctor => "0126").should be_true
+            end
+            @supplies.each do |item, q|
+              slmc.search_order(:description => item, :supplies => true).should be_true
+              slmc.add_returned_order(:supplies => true, :description => item, :add => true).should be_true
+            end
+          #  slmc.beep
+            @oxygen.each do |item, q|
+              slmc.search_order(:description => item, :medical_gases => true).should be_true
+              slmc.add_returned_order(:medical_gases => true, :description => item, :device => "NASAL CANNULA", :lpm => 1,:add => true).should be_true
+            end
+
+              @others.each do |item, q|
+              slmc.search_order(:description => item, :others => true).should be_true
+              slmc.add_returned_order(:others => true, :description => item, :add => true).should be_true
+            end
+
+            sleep 8
+            slmc.verify_ordered_items_count(:drugs => 1).should be_true
+            slmc.verify_ordered_items_count(:ancillary => 1).should be_true
+            slmc.verify_ordered_items_count(:supplies => 1).should be_true
+            slmc.verify_ordered_items_count(:oxygen => 1).should be_true
+            slmc.verify_ordered_items_count(:others => 1).should be_true
+            slmc.submit_added_order(:validate => true, :username => "sel_0287_validator").should be_true
+            slmc.validate_orders(:drugs => true, :ancillary => true, :supplies => true, :orders => "multiple", :oxygen => true, :others => true).should == 5
+            slmc.confirm_validation_all_items.should be_true
+            sleep 6
+            slmc.go_to_general_units_page
+            slmc.nursing_gu_search(:pin => pin)
+            slmc.go_to_gu_page_for_a_given_pin("Order List", pin)
+            (slmc.get_text("//html/body/div/div[2]/div[2]/div[5]/ul/li/a/span")).should == "ORDERS"
+            (slmc.get_text("//html/body/div/div[2]/div[2]/div[5]/ul/li[2]/a/span")).should == "CHECKLIST"
+            (slmc.get_text("//html/body/div/div[2]/div[2]/div[5]/ul/li[3]/a/span")).should == "PACKAGE"
+
+
+          end
         it "Issue # 56018 - Newborn Admission: Add’l Patient Suffix field" do
                   slmc.login(@user, @password).should be_true
                   suffix  = ["II","III","IV","IX","JR","SR","V","VI","VII","VIII"]
@@ -393,44 +393,44 @@ describe "SLMC :: Issues for Regression for Version 1.4" do
             avat_from_db.should == vat
 
         end
-#        it "54220	OSS: Missing Button:Create a New Line for the order" do
-#              @ph_patient =  Admission.generate_data
-#              slmc.login("dastech1", @password).should be_true
-#              slmc.go_to_das_oss
-#              slmc.patient_pin_search(:pin => "test")
-#              slmc.click_outpatient_registration.should be_true
-#              @@oss_pin = slmc.oss_outpatient_registration(@ph_patient).should be_true
-#              @@oss_pin.should be_true
-#              @@pin = @@oss_pin.gsub(' ', '')
-#              slmc.go_to_das_oss
-#              slmc.patient_pin_search(:pin => @@pin)
-#              slmc.click_outpatient_order(:pin => @@pin).should be_true
-#              @@orders1 =  @ancillary1.merge(@ancillary2)
-#              @@orders1.each do |item, q|
-#              slmc.oss_verify_new(:order_add => true, :item_code => item, :quantity => q, :doctor => '0126',:new_line => true)
-#              end
-#          end
-#        it "63710	Philhealth:PF of Case Rate will be computed by Amount" do
-#                  #added in "philhealth_inpatient_case_rate_spec" spec
-#                  #from line 277 to 290
-#        end
-#        it "53066	Philhealth: Non-Case Rate Multiple Session" do
-#        end
-#        it "53057	Philhealth: Adjust regular items’ compensability class" do
-#        end
-#        it "55297	BIR Requirement: Change “CI No” to “Order No” (HCS-wide)" do
-#        end
-#        it "55143	BIR Requirement: Amount due location based on citizenship for PIN-related Misc. Payment Transactions" do
-#        end
-#        it "58466	Philhealth: Compute case rate benefit for less than 24 hours confinement" do
-#        end
-#        it "55282	BIR Requirement: Change “POS” to “Outpatient Sales”" do
-#        end
-#        it "63711	Disregard computation of Manual Discount for Late Orders" do
-#        end
-#        it "62966	Unified admission functionality for wellness role" do
-#
-#        end
+        it "54220	OSS: Missing Button:Create a New Line for the order" do
+              @ph_patient =  Admission.generate_data
+              slmc.login("dastech1", @password).should be_true
+              slmc.go_to_das_oss
+              slmc.patient_pin_search(:pin => "test")
+              slmc.click_outpatient_registration.should be_true
+              @@oss_pin = slmc.oss_outpatient_registration(@ph_patient).should be_true
+              @@oss_pin.should be_true
+              @@pin = @@oss_pin.gsub(' ', '')
+              slmc.go_to_das_oss
+              slmc.patient_pin_search(:pin => @@pin)
+              slmc.click_outpatient_order(:pin => @@pin).should be_true
+              @@orders1 =  @ancillary1.merge(@ancillary2)
+              @@orders1.each do |item, q|
+              slmc.oss_verify_new(:order_add => true, :item_code => item, :quantity => q, :doctor => '0126',:new_line => true)
+              end
+          end
+        it "63710	Philhealth:PF of Case Rate will be computed by Amount" do
+                  #added in "philhealth_inpatient_case_rate_spec" spec
+                  #from line 277 to 290
+        end
+        it "53066	Philhealth: Non-Case Rate Multiple Session" do
+        end
+        it "53057	Philhealth: Adjust regular items’ compensability class" do
+        end
+        it "55297	BIR Requirement: Change “CI No” to “Order No” (HCS-wide)" do
+        end
+        it "55143	BIR Requirement: Amount due location based on citizenship for PIN-related Misc. Payment Transactions" do
+        end
+        it "58466	Philhealth: Compute case rate benefit for less than 24 hours confinement" do
+        end
+        it "55282	BIR Requirement: Change “POS” to “Outpatient Sales”" do
+        end
+        it "63711	Disregard computation of Manual Discount for Late Orders" do
+        end
+        it "62966	Unified admission functionality for wellness role" do
+
+        end
         it "1965 Enhancement FM - PACKAGE - PF amount should be available in Package rate" do
                 slmc.login("abhernandez", @password).should be_true
                 sleep 3
