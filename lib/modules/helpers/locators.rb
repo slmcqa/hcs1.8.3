@@ -52,6 +52,7 @@ module Locators
 #      "//html/body/div[1]/div[2]/div[2]/div[7]/div[2]/div/div"
       #"//html/body/div[1]/div[2]/div[2]/div[7]/div[2]/div/div"
       "//html/body/div[1]/div[2]/div[2]/div[7]/div[1]/div[2]/div/div"
+
 		end
     def self.oss_op_pin
       #"//form[@id='patient']/div[2]/div[1]/label[2]"
@@ -313,8 +314,9 @@ module Locators
     def self.pin
     #  "//div[@id='admissionInfo']/div[3]/div[1]/div"
      # "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[4]/div[1]/div"
-    #  "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[3]/div[1]/div"
-      "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[4]/div[1]/div"
+    #  "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[3]/div[1]/div"s
+     # "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[4]/div[1]/div"
+      "//html/body/div[1]/div[2]/div[2]/form/div[2]/div[3]/div[1]/div"
     end
     def self.room_bed
       "//html/body/div/div[2]/div[2]/div[9]/div[2]/div[2]/table/tbody/tr/td/a"  || "//html/body/div/div[2]/div[2]/div[10]/div[2]/div[2]/table/tbody/tr/td[2]/a"
